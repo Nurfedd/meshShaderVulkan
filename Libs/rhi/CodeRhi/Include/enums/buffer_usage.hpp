@@ -1,0 +1,26 @@
+#pragma once
+
+namespace rhi {
+	enum BufferUsage {
+		UNIFORM_BUFFER = 1 << 1,
+		STORAGE_BUFFER = 1 << 2,
+		VERTEX_BUFFER = 1 << 3,
+		INDEX_BUFFER = 1 << 4,
+		INDIRECT_COMMAND_BUFFR = 1 << 5,
+	};
+
+	enum BufferState {
+        BUFFER_STATE_UNDEFINED,
+
+        BUFFER_STATE_COMPUTE_WRITE,
+        BUFFER_STATE_COMPUTE_READ,
+
+        BUFFER_STATE_VERTEX_BUFFER,
+        BUFFER_STATE_INDEX_BUFFER,
+        BUFFER_STATE_INDIRECT_DRAW,
+
+        BUFFER_STATE_TRANSFER_SRC,
+        BUFFER_STATE_TRANSFER_DST
+	};
+
+}
