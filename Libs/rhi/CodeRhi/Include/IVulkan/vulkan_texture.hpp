@@ -18,7 +18,7 @@ namespace rhi {
 	public:
 		void Create(Device* device, TextureCreateInfo createInfo) override;
 		void CreateVk(VulkanDevice& vulkanDevice, VulkanTextureCreateInfo createInfo);
-		void CreateVk(VulkanImage image, VulkanImageView imageView) { vulkanImage = image; vulkanImageView = imageView; };
+		void CreateVk(VulkanImage image, VulkanImageView imageView, uint32_t width, uint32_t height) { vulkanImage = image; vulkanImageView = imageView; textureWidth = width; textureHeight = height; };
 		
 		void UploadVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, void* pixels, uint32_t channels);
 		void Upload(Device* device, UploadContext* uploadContext, void* pixels, uint32_t channels) override;

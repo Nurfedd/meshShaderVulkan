@@ -1,0 +1,15 @@
+[submodule "External/GLFW"]
+	path = External/GLFW
+	url = https://github.com/glfw/glfw.git
+[submodule "External/volk"]
+	path = External/volk
+	url = https://github.com/zeux/volk.git
+[submodule "External/assimp"]
+	path = External/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "External/meshoptimizer"]
+	path = External/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git
+[submodule "External/glm"]
+	path = External/glm
+	url = https://github.com/g-truc/glm.git

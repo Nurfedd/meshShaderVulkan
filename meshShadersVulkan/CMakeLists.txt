@@ -35,10 +35,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
+target_link_libraries(${PROJECT_NAME} PUBLIC glm)
 target_link_libraries(${PROJECT_NAME} PUBLIC RHI)
-target_link_libraries(${PROJECT_NAME} PUBLIC Physics)
+#target_link_libraries(${PROJECT_NAME} PUBLIC Physics)
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
+target_link_libraries(${PROJECT_NAME} PRIVATE meshoptimizer)
 
 
 # Copy "resources/" folder.

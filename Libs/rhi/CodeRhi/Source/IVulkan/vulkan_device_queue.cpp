@@ -88,6 +88,7 @@ namespace rhi {
 		queueSubmitInfo.signalSemaphoreInfoCount = signalInfo.size();
 
 		VkResult result = vkQueueSubmit2(queue, 1, &queueSubmitInfo, vkFence);
+		
 	}
 
 	std::vector<VkSemaphoreSubmitInfo> VulkanDeviceQueue::GetSubmitInfo(SemaphoreSubmitInfoVk submitInfo) {

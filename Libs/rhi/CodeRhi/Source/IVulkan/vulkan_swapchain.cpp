@@ -153,7 +153,7 @@ namespace rhi {
 			VulkanImageView imageView;
 			imageView.Create(vulkanDevice, imageViewCreateInfo);
 
-			vulkanTexture->CreateVk(image, imageView);
+			vulkanTexture->CreateVk(image, imageView,GetWidth(),GetHeight());
 			swapchainImageTextures[i] = vulkanTexture;
 		}
 	}

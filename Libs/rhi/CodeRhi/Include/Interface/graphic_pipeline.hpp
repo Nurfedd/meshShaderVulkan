@@ -32,9 +32,6 @@ namespace rhi {
 		SetLayout** setLayouts = nullptr;
 		VertexLayout** vertexLayouts = nullptr;
 
-		Shader* vertexShader = nullptr;
-		Shader* fragmentShader = nullptr;
-		Shader* geometryShader = nullptr;
 
 		uint32_t pushConstantCount = 0;
 		uint32_t setLayoutCount = 0;
@@ -42,11 +39,23 @@ namespace rhi {
 
 		RasterizerInfo rasterizerInfo;
 	};
+	struct GraphicVertexPipelineCreateInfo : public GraphicPipelineCreateInfo {
+		Shader* vertexShader = nullptr;
+		Shader* fragmentShader = nullptr;
+		Shader* geometryShader = nullptr;
+	};
+
+	struct GraphicMeshPipelineCreateInfo : public GraphicPipelineCreateInfo {
+		Shader* fragmentShader = nullptr;
+		Shader* taskShader = nullptr;
+		Shader* meshShader = nullptr;
+	};
 
 	class GraphicPipeline : public Pipeline {
 	public :
 		virtual ~GraphicPipeline() = default;
-		virtual void Create(Device* device, GraphicPipelineCreateInfo graphicPipelineCreateInfo) = 0;
+		virtual void CreateVertexPipeline(Device* device, GraphicVertexPipelineCreateInfo* graphicVertexPipelineCreateInfo) = 0;
+		virtual void CreateMeshPipeline(Device* device, GraphicMeshPipelineCreateInfo* graphicMeshPipelineCreateInfo) = 0;
 		virtual VulkanGraphicPipeline& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanGraphicPipeline"); }
 	protected :
 	};
