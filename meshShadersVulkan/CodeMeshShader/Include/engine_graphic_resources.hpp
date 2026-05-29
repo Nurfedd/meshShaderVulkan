@@ -16,6 +16,7 @@ namespace msvk {
 		rhi::Device* GetDevice() { return device; }
 		rhi::Swapchain* GetSwapchain() { return swapchain; }
 		rhi::CommandPool* GetCommandPool() { return graphicCommandPool; }
+		rhi::Instance* GetInstance() { return instance; }
 
 		uint32_t GetFrameInFlightCount();
 		uint32_t GetCurrentFrame();

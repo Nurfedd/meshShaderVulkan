@@ -20,25 +20,11 @@ namespace msvk {
 			graphicCommandBuffers[i] = newCommandBuffer;
 		}
 		commandPool->AllocateCommandBuffers(device, graphicCommandBuffers.data(), graphicCommandBuffers.size());
+
+		additionalSwapchainRenderer = renderInterface->InitDynamicRenderer();
 	}
 
-	void Engine::Update() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
-		uint32_t currentFrame = engineResources->GetCurrentFrame();
-
-		float currentTime = glfwGetTime();
-		deltaTime = lastTime - currentTime;
-		lastTime = currentTime;
-
-		
-		if (BeginFrame()) {
-			Swapchain* swapchain = engineResources->GetSwapchain();
-			RenderFrame();
-			PresentSwapchain();
-			swapchain->AdvanceToNextImage();
-		}
-
-	}
+	
 
 	bool Engine::BeginFrame() {
 		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
@@ -66,10 +52,12 @@ namespace msvk {
 		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
 		Device* device = engineResources->GetDevice();
 		Swapchain* swapchain = engineResources->GetSwapchain();
-
+		
 		uint32_t imageIndex = swapchain->GetImageIndex();
 		uint32_t currentFrame = engineResources->GetCurrentFrame();
 
+
+		Texture* swapchainTexture = swapchain->GetTexture(imageIndex);
 
 		Fence* currentFence = engineResources->GetCurrentFence();
 		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentFrame());
@@ -80,23 +68,23 @@ namespace msvk {
 
 		std::vector<Semaphore*> waitSemaphores (1);
 		std::vector<PipelineStageFlags> waitStages (1);
-		std::vector<CommandBuffer*> renderCommands(1);
+		std::vector<CommandBuffer*> renderCommands;
 		std::vector<uint64_t> waitValues;
 
 		waitSemaphores[0] = imageAvailableSemaphore;
 		waitStages[0] = PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT;
-		renderCommands[0] = commandBuffer;
+		
 
 		commandBuffer->Reset();
 		commandBuffer->Begin();
 
 		for (std::unique_ptr<SceneRenderContext>& sceneRenderContext : renderContexts) {
 			SceneRenderer* sceneRenderer = sceneRenderContext->sceneRenderer.get();
-			Texture* texture = (sceneRenderContext->renderOnSwapchain) ? swapchain->GetTexture(imageIndex) : sceneRenderContext->texture;
+			Texture* texture = (sceneRenderContext->renderOnSwapchain) ? swapchainTexture : sceneRenderContext->texture;
 			SceneRenderedInfo renderedInfo = sceneRenderer->RenderFrame(texture);
 
 			if (renderedInfo.commandToSubmit) {
-				renderCommands.insert(renderCommands.begin(),renderedInfo.commandToSubmit);
+				renderCommands.push_back(renderedInfo.commandToSubmit);
 			}
 			for (SemaphoreRenderInfo semaphoreInfo : renderedInfo.semaphoreInfo) {
 				waitSemaphores.push_back(semaphoreInfo.semaphore);
@@ -110,7 +98,7 @@ namespace msvk {
 			}
 		}
 		
-		swapchain->PreparePresentImage(commandBuffer);
+		renderCommands.push_back(commandBuffer);
 		SubmitInfo submitInfo;
 		
 		SemaphoreSubmitInfo waitSubmitInfo;
@@ -130,8 +118,32 @@ namespace msvk {
 		submitInfo.waitSemaphoreInfo = waitSubmitInfo;
 		submitInfo.signalSemaphoreInfo = signalSubmitInfo;
 
+		if (onCommandRecorded) {
+
+			Attachment colorAttachment;
+			colorAttachment.texture = swapchainTexture;
+			colorAttachment.clearBuffer = false;
+			colorAttachment.texture = swapchainTexture;
+
+			BeginRenderingInfo renderingInfo;
+			renderingInfo.colorAttachmentCount = 1;
+			renderingInfo.colorAttachments = &colorAttachment;
+			renderingInfo.height = swapchain->GetHeight();
+			renderingInfo.width = swapchain->GetWidth();
+
+			renderingInfo.depthAttachment = nullptr;
+
+			additionalSwapchainRenderer->Begin(commandBuffer, renderingInfo);
+			onCommandRecorded(commandBuffer);
+			additionalSwapchainRenderer->End(commandBuffer);
+		}
+		swapchain->PreparePresentImage(commandBuffer);
 		commandBuffer->End();
+		
 		graphicQueue->Submit(renderCommands.data(), renderCommands.size(), submitInfo, currentFence);
+
+		PresentSwapchain();
+		swapchain->AdvanceToNextImage();
 	}
 
 	void Engine::PresentSwapchain() {
@@ -166,6 +178,7 @@ namespace msvk {
 		for (std::unique_ptr<SceneRenderContext>& sceneRenderContext : renderContexts) {
 			sceneRenderContext->sceneRenderer->Destroy(device);
 		}
+		renderInterface->DestroyDynamicRenderer(additionalSwapchainRenderer);
 		ServiceLocator::Clear();
 	}
 }

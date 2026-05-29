@@ -11,7 +11,6 @@ struct BeginImpl {
 	rhi::Device* device;
 	rhi::Instance* instance;
 	rhi::Swapchain* swapchain;
-	rhi::GraphicPipeline* renderingPipeline;
 };
 
 

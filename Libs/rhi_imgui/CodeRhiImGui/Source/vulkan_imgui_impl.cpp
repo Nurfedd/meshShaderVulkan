@@ -20,10 +20,9 @@ void Rhi_Vulkan_ImGui_Implementation::Create(BeginImpl beginInfo) {
 	this->vulkanDevice = vulkanDevice;
 	DeviceQueue* graphicQueue = vulkanDevice.GetQueue(GRAPHIC_QUEUE);
 	VulkanDeviceQueue vulkanGraphicQueue = graphicQueue->API_VULKAN();
-	VulkanGraphicPipeline& vulkanGraphicPipeline = beginInfo.renderingPipeline->API_VULKAN();
 	VulkanInstance& vulkanInstance = beginInfo.instance->API_VULKAN();
 
-	std::vector<VkFormat> colorFormats = vulkanGraphicPipeline.GetFormats();
+	VkFormat colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
 	vulkanDescriptorPool.CreatePoolForImGui(vulkanDevice);
 
@@ -46,9 +45,9 @@ void Rhi_Vulkan_ImGui_Implementation::Create(BeginImpl beginInfo) {
 
 	VkPipelineRenderingCreateInfoKHR renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
-	renderingInfo.pColorAttachmentFormats = colorFormats.data();
-	renderingInfo.colorAttachmentCount = colorFormats.size();
-	renderingInfo.depthAttachmentFormat = vulkanGraphicPipeline.GetDepthFormat();
+	renderingInfo.pColorAttachmentFormats = &colorFormat;
+	renderingInfo.colorAttachmentCount = 1;
+	renderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
 
 	pipelineInfo.PipelineRenderingCreateInfo = renderingInfo;
 

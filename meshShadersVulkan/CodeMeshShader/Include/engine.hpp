@@ -3,8 +3,10 @@
 #include "scene_renderer.hpp"
 #include "Interface/texture.hpp"
 #include "Interface/device.hpp"
+#include "Interface/dynamic_renderer.hpp"
 #include "engine_graphic_resources.hpp"
 #include "service_locator.hpp"
+#include <functional>
 #include <memory>
 namespace msvk {
 	struct SceneRenderContext {
@@ -16,7 +18,8 @@ namespace msvk {
 	public :
 		void Init(GLFWwindow* window);
 		
-		void Update();
+		bool BeginFrame();
+		void RenderFrame();
 		void Destroy();
 
 		template <typename T> 
@@ -39,18 +42,19 @@ namespace msvk {
 
 			return rawSceneRenderContext;
 		}
+		void AddDrawDataFunc(std::function<void(rhi::CommandBuffer*)> func) { onCommandRecorded = func; }
 	private :
 		float lastTime = 0.f;
 		float deltaTime = 0.f;
 
 		rhi::DeviceQueue* graphicQueue;
 		rhi::DeviceQueue* presentQueue;
-
+		rhi::DynamicRenderer* additionalSwapchainRenderer = nullptr;
 		std::vector<rhi::CommandBuffer*> graphicCommandBuffers;
 		std::vector<std::unique_ptr<SceneRenderContext>> renderContexts;
 
-		bool BeginFrame();
-		void RenderFrame();
+		std::function<void(rhi::CommandBuffer*)> onCommandRecorded;
+		
 		void PresentSwapchain();
 	};
 }
