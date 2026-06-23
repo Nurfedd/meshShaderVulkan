@@ -1,0 +1,22 @@
+#pragma once
+#include "GLFW/glfw3.h"
+#include "engine.hpp"
+#include "Graphics/SceneRenderers/triangle_renderer.hpp"
+#include "imgui_impl.hpp"
+namespace nino_editor {
+	class NinoEditor {
+	public :
+		void Run(int width,int height,const char* label);
+	private :
+		void Init(int width, int height, const char* label);
+		void RecordImGuiDrawData(rhi::CommandBuffer* commandBuffer);
+		void InitImGui();
+		void Loop();
+		void Destroy();
+
+		GLFWwindow* window = nullptr;
+		nino_engine::NinoEngine engine;
+
+		Rhi_ImGui_Implementation* imGuiImplementation = nullptr;
+	};
+}

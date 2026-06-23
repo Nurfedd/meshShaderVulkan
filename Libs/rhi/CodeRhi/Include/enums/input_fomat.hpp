@@ -1,5 +1,5 @@
 #pragma once
-
+#include "nino_core.hpp"
 namespace rhi {
 	enum InputFormat {
 		FLOAT1,
@@ -36,6 +36,7 @@ namespace rhi {
 		FRAGMENT_STAGE = 1 << 2,
 		COMPUTE_STAGE = 1 << 3,
 	};
+	ENUM_CLASS_FLAGS(ShaderStagesFlags);
 	enum IndexType {
 		INDEX_TYPE_UINT_8,
 		INDEX_TYPE_UINT_16,

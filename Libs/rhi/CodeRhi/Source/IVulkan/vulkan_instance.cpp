@@ -51,7 +51,7 @@ namespace rhi {
 		}
 
 		if (vkCreateInstance(&createInfo, nullptr, &vkInstance) != VK_SUCCESS) {
-			throw std::exception("failed to create instance!");
+			throw std::exception("failed to create Instance!");
 		}
 		volkLoadInstance(vkInstance);
 	}

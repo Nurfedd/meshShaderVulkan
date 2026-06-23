@@ -14,7 +14,7 @@ namespace rhi {
 	void VulkanSwapchain::Create(Device* device, SwapchainCreateInfo swapchainCreateInfo) {
 		Swapchain::Create(device, swapchainCreateInfo);
 		if (surface == nullptr) {
-			throw std::exception("Surface is null for swapchain creation");
+			throw std::exception("Surface is null for Swapchain creation");
 			return;
 		}  
 
@@ -28,7 +28,7 @@ namespace rhi {
 		DeviceQueue* presentQueue = device->GetQueue(PRESENT_QUEUE);
 
 		if (graphicQueue == nullptr || presentQueue == nullptr) {
-			throw std::exception("Cannot create a swapchain without present queue and graphic queue");
+			throw std::exception("Cannot create a Swapchain without present queue and graphic queue");
 			return;
 		}
 		VulkanDeviceQueue& vulkanGraphicQueue = graphicQueue->API_VULKAN();
@@ -80,7 +80,7 @@ namespace rhi {
 		createInfo.oldSwapchain = swapchain;
 
 		if (vkCreateSwapchainKHR(vulkanDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
-			throw std::exception("swapchain creation failed");
+			throw std::exception("Swapchain creation failed");
 		}
 
 		if (oldSwaphain) {

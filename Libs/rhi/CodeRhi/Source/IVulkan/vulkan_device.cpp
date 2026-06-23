@@ -106,7 +106,7 @@ namespace rhi {
 			createInfo.enabledLayerCount = 0;
 		}
 		if (vkCreateDevice(vkPhysicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
-			throw std::exception("failed to create logical device!");
+			throw std::exception("failed to create logical Device!");
 		}
 		volkLoadDevice(device);
 		

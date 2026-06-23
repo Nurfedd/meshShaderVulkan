@@ -32,7 +32,11 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
     volk
     glfw
+    nino_core
 )
+
+
+
 
 
 # Macro definitions.

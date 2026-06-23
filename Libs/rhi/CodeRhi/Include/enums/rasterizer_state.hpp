@@ -1,4 +1,5 @@
 #pragma once
+#include "nino_core.hpp"
 namespace rhi {
 	enum PolygonMode {
 		FILL,
@@ -15,4 +16,5 @@ namespace rhi {
 		FRONT_FACE = 1 << 2,
 		CULL_ALL = 0x7FFFFFFF,
 	};
+	ENUM_CLASS_FLAGS(CullModeFlags);
 }

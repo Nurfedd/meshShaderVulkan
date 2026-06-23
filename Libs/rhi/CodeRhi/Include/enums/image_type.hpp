@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "nino_core.hpp"
 namespace rhi {
 	enum ViewType {
 		VIEW_2D,
@@ -15,6 +16,7 @@ namespace rhi {
         DEPTH_STENCIL_ATTACHMENT_USAGE = 1 << 6,
         INPUT_ATTACHMENT_USAGE = 1 << 7,
     };
+    ENUM_CLASS_FLAGS(ImageUsage);
     enum SamplerAdressMode {
         REPEAT_ADRESS_MODE,
         MIRRORED_REPEAT_ADRESS_MODE,

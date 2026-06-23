@@ -4038,7 +4038,7 @@ void ImGui::DebugNodeTable(ImGuiTable* table)
     if (!open)
         return;
     if (table->InstanceCurrent > 0)
-        Text("** %d instances of same table! Some data below will refer to last instance.", table->InstanceCurrent + 1);
+        Text("** %d instances of same table! Some data below will refer to last Instance.", table->InstanceCurrent + 1);
     if (g.IO.ConfigDebugIsDebuggerPresent)
     {
         if (DebugBreakButton("**DebugBreak**", "in BeginTable()"))

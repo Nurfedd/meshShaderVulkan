@@ -1,5 +1,5 @@
 #pragma once
-
+#include "nino_core.hpp"
 namespace rhi {
 	enum BufferUsage {
 		UNIFORM_BUFFER = 1 << 1,
@@ -8,7 +8,7 @@ namespace rhi {
 		INDEX_BUFFER = 1 << 4,
 		INDIRECT_COMMAND_BUFFR = 1 << 5,
 	};
-
+	ENUM_CLASS_FLAGS(BufferUsage);
 	enum BufferState {
         BUFFER_STATE_UNDEFINED,
 

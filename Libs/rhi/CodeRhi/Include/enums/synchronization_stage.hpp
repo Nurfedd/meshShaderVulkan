@@ -1,4 +1,5 @@
 #pragma once
+#include "nino_core.hpp"
 namespace rhi {
     enum PipelineStageFlags {
         PIPELINE_STAGE_NONE = 0,
@@ -14,6 +15,7 @@ namespace rhi {
         PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = 1 << 9,
         PIPELINE_STAGE_ALL_COMMANDS = 1 << 10,
 	};
+    ENUM_CLASS_FLAGS(PipelineStageFlags);
     enum AccessFlags
     {
         NONE_ACCESS = 0,
@@ -28,6 +30,7 @@ namespace rhi {
         COLOR_ATTACHMENT_READ = 1 << 9,
         DEPTH_STENCIL_WRITE = 1 << 10,
     };
+    ENUM_CLASS_FLAGS(AccessFlags);
     enum ImageLayout
     {
         UNDEFINED = 0,
