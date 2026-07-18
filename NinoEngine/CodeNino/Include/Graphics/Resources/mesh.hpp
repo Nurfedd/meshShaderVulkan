@@ -3,13 +3,13 @@
 #include "nino_core.hpp"
 #include <filesystem>
 namespace nino_engine {
-	enum class MeshTypeFlags
+	/*enum class MeshTypeFlags
 	{
 		MESHTYPE_VERTEX,
 		MESHTYPE_MESHLET,
 		MESHTYPE_RAYBLAS
 	};
-	ENUM_CLASS_FLAGS(MeshTypeFlags);
+	ENUM_CLASS_FLAGS(MeshTypeFlags);*/
 
 
 	class Mesh : public IResource {

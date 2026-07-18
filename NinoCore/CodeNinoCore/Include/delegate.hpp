@@ -31,7 +31,7 @@ private:
 public:
 
     Delegate() : nextId(1) {}
-
+    ~Delegate() { RemoveAll(); }
     Handle Add(std::function<void(Args...)> func)
     {
         Handle h;
@@ -100,4 +100,4 @@ private:
 };
 
 #define DECLARE_DELEGATE(Name, ...) \
-    using Name = Delegate<__VA_ARGS__>
+    using Name = Delegate<__VA_ARGS__>;

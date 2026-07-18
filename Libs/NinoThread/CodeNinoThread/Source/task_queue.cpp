@@ -7,7 +7,7 @@ namespace mt
     {
         {
             std::lock_guard lock(mutex);
-            queue.push(std::move(task));
+            queue.push(task);
         }
         cv.notify_one();
     }
@@ -36,5 +36,6 @@ namespace mt
             stopped = true;
         }
         cv.notify_all();
+        onTaskCompleted.RemoveAll();
     }
 }

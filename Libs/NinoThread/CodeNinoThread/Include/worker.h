@@ -1,14 +1,13 @@
 #pragma once
 #include <thread>
 #include "task_queue.h"
-#include "main_thread_queue.h"
 
 namespace mt
 {
     class Worker
     {
     public:
-        Worker(TaskQueue& queue, MainThreadQueue& mainQueue);
+        Worker(TaskQueue& queue);
         ~Worker();
 
         void Start();
@@ -19,7 +18,6 @@ namespace mt
 
     private:
         TaskQueue& taskQueue;
-        MainThreadQueue& mainQueue;
         std::jthread thread;
     };
 }

@@ -7,6 +7,8 @@ namespace rhi {
 		VERTEX_BUFFER = 1 << 3,
 		INDEX_BUFFER = 1 << 4,
 		INDIRECT_COMMAND_BUFFR = 1 << 5,
+		TRANSFER_SRC = 1 << 6,
+		TRANSFER_DST = 1 << 7
 	};
 	ENUM_CLASS_FLAGS(BufferUsage);
 	enum BufferState {

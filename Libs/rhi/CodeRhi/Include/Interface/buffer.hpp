@@ -10,11 +10,13 @@ namespace rhi {
 		virtual ~Buffer() = default;
 		
 		virtual void CreateGpu(Device* device, BufferUsage usage, size_t size) = 0;
-		virtual void CreateGpu(Device* device, UploadContext* uploadContext, BufferUsage usage, void* data, size_t size) =0;
+		virtual void CreateGpu(Device* device, UploadContext* uploadContext, BufferUsage usage, void* data, size_t size) = 0;
+		virtual void CreateGpu(Device* device, CommandBuffer* commandBuffer, BufferUsage usage, void* data, size_t size) = 0;
 		virtual void ReallocGpu(Device* device, UploadContext* uploadContext, size_t size) = 0;
 		virtual void ReallocNoCopyGpu(Device* device, size_t size) = 0;
 		virtual void CopyGpu(Device* device, UploadContext* uploadContext, Buffer* otherBuffer, size_t copySize) = 0;
-
+		virtual void CopyGpu(Device* device, CommandBuffer* commandBuffer, Buffer* otherBuffer, size_t copySize) = 0;
+		virtual void* GetBufferData() = 0;
 		virtual void CreateCpu(Device* device, BufferUsage usage, void* data, size_t size) = 0;
 		virtual void ReallocCpu(Device* device, size_t size) = 0;
 		virtual void ReallocNoCopyCpu(Device* device, size_t size) = 0;

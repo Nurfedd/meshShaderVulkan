@@ -8,20 +8,21 @@ namespace mt
     {
     public:
         Task() = default;
+        Task(std::function<void()> onCompleted, std::function<void()> onExecuted);
         virtual ~Task() = default;
 
         void Wait();
         Task(const Task&) = delete;
         Task& operator=(const Task&) = delete;
 
-        virtual void Execute() = 0;
-        virtual void OnComplete() {};
+        virtual void Execute();
+        virtual void OnComplete();
 
     private:
-        void NotifyExecuted();
         std::condition_variable condition_variable;
+        std::function<void()> onCompleted;
+        std::function<void()> onExecuted;
         std::mutex mutex;
         bool completed = false;
-        friend class Worker;
     };
 }

@@ -100,8 +100,12 @@ namespace rhi {
 			vulkanDescriptorSets[i] = &sets[i]->API_VULKAN();
 			vulkanSetLayouts[i] = layouts[i]->API_VULKAN();
 		}
-
+		
 		AllocateSetsVk(vulkanDevice, vulkanDescriptorSets.data(),vulkanSetLayouts.data(), setCount,variableCounts);
+	}
+
+	void VulkanDescriptorPool::Reset(Device* device) {
+		vkResetDescriptorPool(device->API_VULKAN(), descriptorPool, 0);
 	}
 	void VulkanDescriptorPool::DestroyVk(VulkanDevice& vulkanDevice) {
 		vkDestroyDescriptorPool(vulkanDevice, descriptorPool, nullptr);

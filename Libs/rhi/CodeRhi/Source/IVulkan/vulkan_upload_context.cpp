@@ -14,7 +14,7 @@ namespace rhi {
 
 	void VulkanUploadContext::Upload(VulkanDevice& vulkanDevice,std::function<void(VulkanCommandBuffer commandBuffer)> func) {
 		
-		vulkanDevice.WaitForFencesVk(&fence, 1, 1);
+		vulkanDevice.WaitForFencesVk(&fence, 1, true);
 		vulkanDevice.ResetFencesVk(&fence, 1);
 		
 		commandBuffer.Reset();
@@ -24,7 +24,7 @@ namespace rhi {
 		commandBuffer.End();
 		
 		queue->SubmitVk(&commandBuffer, 1, &fence);
-		vulkanDevice.WaitForFencesVk(&fence, 1, 1);
+		vulkanDevice.WaitForFencesVk(&fence, 1, true);
 	}
 	void VulkanUploadContext::Destroy(Device* device) {
 		commandPool.Destroy(device);

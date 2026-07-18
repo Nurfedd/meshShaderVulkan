@@ -12,13 +12,13 @@ namespace nino_engine {
 	};
 	class ServiceLocator {
 	public :
-		template <typename T>
-		static T* RegisterService(int priority = 0) {
+		template <typename T, typename... Args>
+		static T* RegisterService(int priority, Args&&... args) {
 			static_assert(std::is_base_of<Service, T>::value);
 			std::type_index typeIndex = typeid(T);
 			if (services.contains(typeIndex))
 				return nullptr;
-			T* newService = new T;
+			T* newService = new T(std::forward<Args>(args)...);
 
 			ServiceContainer serviceContainer;
 			serviceContainer.priority = priority;
@@ -46,6 +46,6 @@ namespace nino_engine {
 		static void Clear();
 	private :
 		static std::unordered_map<std::type_index, ServiceContainer> services;
-		//std::vector<std::unique_ptr
+		
 	};
 }

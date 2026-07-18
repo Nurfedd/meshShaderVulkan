@@ -11,9 +11,16 @@ namespace rhi {
 		vkCreateFence(vulkanDevice, &createInfo, nullptr, &fence);
 	}
 
-	void VulkanFence::Create(Device* device) {
+	bool VulkanFence::IsReadyVk(VulkanDevice& vulkanDevice) {
+		return vkGetFenceStatus(vulkanDevice, fence) == VK_SUCCESS;
+	}
+	
+	bool VulkanFence::IsReady(Device* device) {
+		return IsReadyVk(device->API_VULKAN());
+	}
+	void VulkanFence::Create(Device* device,bool initialReady) {
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		CreateVk(vulkanDevice, VK_FENCE_CREATE_SIGNALED_BIT);
+		CreateVk(vulkanDevice, initialReady ? VK_FENCE_CREATE_SIGNALED_BIT : 0);
 	}
 	
 	void VulkanFence::Destroy(Device* device) {

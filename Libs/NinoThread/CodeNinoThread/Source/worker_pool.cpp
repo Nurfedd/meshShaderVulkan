@@ -16,7 +16,7 @@ namespace mt
 
         for (size_t i = 0; i < threadCount; ++i)
         {
-            auto worker = std::make_unique<Worker>(taskQueue, mainQueue);
+            auto worker = std::make_unique<Worker>(taskQueue);
             worker->Start();
             workers.push_back(std::move(worker));
         }
@@ -32,9 +32,7 @@ namespace mt
     {
         taskQueue.Push(task);
     }
-
-    std::vector<Task*> WorkerPool::UpdateMainThread()
-    {
-        return mainQueue.ExecuteAll();
+    uint32_t WorkerPool::GetWorkerCount() {
+        return workers.size();
     }
 }

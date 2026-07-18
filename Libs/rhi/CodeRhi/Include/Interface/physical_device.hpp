@@ -1,16 +1,20 @@
 #pragma once
 #include "Interface/surface.hpp"
+#include "nino_core.hpp"
 namespace rhi {
 	class VulkanPhysicalDevice;
 	enum QueueSupportedFlags {
 		NONE = 0,
 		GRAPHICS_SUPPORT = 1 << 1,
 		COMPUTE_SUPPORT = 1 << 2,
+		TRANSFER_SUPPORT = 1 << 3
 	};
+	ENUM_CLASS_FLAGS(QueueSupportedFlags)
 	enum QueueType {
 		GRAPHIC_QUEUE,
 		COMPUTE_QUEUE,
 		PRESENT_QUEUE,
+		TRANSFER_QUEUE
 	};
 	class PhysicalDevice {
 	public :

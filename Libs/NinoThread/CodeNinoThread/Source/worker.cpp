@@ -2,8 +2,8 @@
 #include "task.h"
 namespace mt
 {
-    Worker::Worker(TaskQueue& queue, MainThreadQueue& _mainQueue)
-        : taskQueue(queue), mainQueue(_mainQueue)
+    Worker::Worker(TaskQueue& queue)
+        : taskQueue(queue)
     {
     }
 
@@ -32,8 +32,8 @@ namespace mt
                 break;
 
             task->Execute();
-            task->NotifyExecuted();
-            mainQueue.Push(task);
+            task->OnComplete();
+            taskQueue.onTaskCompleted.Broadcast(task);
         }
     }
 }

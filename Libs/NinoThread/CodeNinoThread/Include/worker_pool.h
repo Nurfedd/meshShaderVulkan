@@ -12,15 +12,13 @@ namespace mt
         WorkerPool();
         ~WorkerPool();
 
-        void Start(size_t threadCount = std::thread::hardware_concurrency());
+        void Start(size_t threadCount);
         void Stop();
-
         void Submit(Task* task);
-        std::vector<Task*> UpdateMainThread();
-
-    private:
+        uint32_t GetWorkerCount();
         TaskQueue taskQueue;
-        MainThreadQueue mainQueue;
+    private:
+        
         std::vector<std::unique_ptr<Worker>> workers;
     };
 }

@@ -39,8 +39,8 @@ namespace rhi {
         DEPTH_STENCIL_ATTACHMENT,
         DEPTH_STENCIL_READ_ONLY,
         SHADER_READ_ONLY,
-        TRANSFER_SRC,
-        TRANSFER_DST,
+        TRANSFER_SRC_LAYOUT,
+        TRANSFER_DST_LAYOUT,
         PRESENT
     };
 }

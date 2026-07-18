@@ -7,7 +7,7 @@ namespace rhi {
     // VULKAN IMPL
 	void VulkanBuffer::CreateVk(VulkanDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VmaAllocationCreateFlags flags, VkMemoryPropertyFlags requiredFlags) {
         bufferSize = size;
-        vkBufferUsage = usage | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+        vkBufferUsage = usage;
         vkFlags = flags;
         vkRequiredFlags = requiredFlags;
 
@@ -44,6 +44,15 @@ namespace rhi {
         stagingBuffer.Destroy(vulkanDevice);
     }
 
+    void VulkanBuffer::CreateGpuVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, VkBufferUsageFlags bufferUsage, void* data, size_t size) {
+        VkBufferUsageFlags bufferUsageFlags = bufferUsage | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        CreateVk(vulkanDevice, size, bufferUsageFlags, 0, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        VulkanBuffer stagingBuffer;
+        stagingBuffer.CreateCpuVk(vulkanDevice, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, data, size);
+        CopyGpuVk(vulkanDevice, vulkanCommandBuffer, stagingBuffer.GetBuffer(), size);
+        stagingBuffer.Destroy(vulkanDevice);
+    }
+
     void VulkanBuffer::ReallocGpuVk(VulkanDevice& vulkanDevice, VulkanUploadContext vulkanUploadContext, size_t newSize) {
         CheckGpu("Realloc");
         VmaAllocation oldAllocation = allocation;
@@ -66,38 +75,38 @@ namespace rhi {
     void VulkanBuffer::CopyGpuVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, VkBuffer sourceBuffer, size_t copySize) {
         CheckGpu("Copy");
         uploadContext.Upload(vulkanDevice, [&](VulkanCommandBuffer commandBuffer) {
-            VkBufferCopy copy{};
-            copy.size = copySize;
-            VkCommandBuffer cmd = commandBuffer.commandBuffer;
-            VkBuffer dstBuffer = buffer;
-            
-            vkCmdCopyBuffer(cmd, sourceBuffer, dstBuffer, 1, &copy);
-            VulkanBarrierInfo barrierInfo = VulkanUsageToBarrier(vkBufferUsage);
-
-            VulkanBufferBarrier bufferBarrier;
-            bufferBarrier.SetStages(
-                VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-                VK_ACCESS_2_TRANSFER_WRITE_BIT,
-                barrierInfo.stage,
-                barrierInfo.access
-            );
-            bufferBarrier.buffer = dstBuffer;
-            bufferBarrier.offset = 0;
-            bufferBarrier.size = VK_WHOLE_SIZE;
-
-            BarriersDependencyVk dependency;
-            dependency.bufferBarrierCount = 1;
-            dependency.bufferBarriers = &bufferBarrier;
-
-            commandBuffer.PipelineBarrierVk(dependency);
+            CopyGpuVk(vulkanDevice, commandBuffer, sourceBuffer, copySize);
             });
     }
+    void VulkanBuffer::CopyGpuVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, VkBuffer sourceBuffer, size_t copySize) {
+        VkBufferCopy copy{};
+        copy.size = copySize;
+        VkCommandBuffer cmd = vulkanCommandBuffer.commandBuffer;
 
+        vkCmdCopyBuffer(cmd, sourceBuffer, buffer, 1, &copy);
+        VulkanBarrierInfo barrierInfo = VulkanUsageToBarrier(vkBufferUsage);
+
+        VulkanBufferBarrier bufferBarrier;
+        bufferBarrier.SetStages(
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            barrierInfo.stage,
+            barrierInfo.access
+        );
+        bufferBarrier.buffer = buffer;
+        bufferBarrier.offset = 0;
+        bufferBarrier.size = VK_WHOLE_SIZE;
+
+        BarriersDependencyVk dependency;
+        dependency.bufferBarrierCount = 1;
+        dependency.bufferBarriers = &bufferBarrier;
+
+        vulkanCommandBuffer.PipelineBarrierVk(dependency);
+    }
     void VulkanBuffer::CreateCpuVk(VulkanDevice& vulkanDevice, VkBufferUsageFlags bufferUsage, void* data, size_t size) {
         CreateVk(vulkanDevice, size, bufferUsage, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         vmaMapMemory(vulkanDevice.GetAllocator(), allocation, &mappedPtr);
         SetCpu(data, size, 0);
-        
     }
 
     void VulkanBuffer::ReallocCpuVk(VulkanDevice& vulkanDevice, size_t newSize) {
@@ -128,6 +137,9 @@ namespace rhi {
         free(readData);
     }
 
+    void* VulkanBuffer::GetBufferData() {
+        return mappedPtr;
+    }
     void VulkanBuffer::TransitionBufferVk(VulkanCommandBuffer& vulkanCommandBuffer, VulkanBufferState dstBufferState) {
         VulkanBufferBarrier bufferBarrier;
         bufferBarrier.SetStages(
@@ -158,6 +170,10 @@ namespace rhi {
         CreateGpuVk(device->API_VULKAN(), uploadContext->API_VULKAN(), ToVulkanBufferUsage(usage), data, size);
     }
 
+    void VulkanBuffer::CreateGpu(Device* device, CommandBuffer* commandBuffer, BufferUsage usage, void* data, size_t size) {
+        CreateGpuVk(device->API_VULKAN(), commandBuffer->API_VULKAN(), ToVulkanBufferUsage(usage), data, size);
+    }
+
     void VulkanBuffer::ReallocGpu(Device* device, UploadContext* uploadContext, size_t size) {
         ReallocGpuVk(device->API_VULKAN(), uploadContext->API_VULKAN(), size);
     }
@@ -168,6 +184,10 @@ namespace rhi {
 
     void VulkanBuffer::CopyGpu(Device* device, UploadContext* uploadContext, Buffer* otherBuffer, size_t copySize) {
         CopyGpuVk(device->API_VULKAN(), uploadContext->API_VULKAN(), otherBuffer->API_VULKAN().GetBuffer(), copySize);
+    }
+
+    void VulkanBuffer::CopyGpu(Device* device, CommandBuffer* commandBuffer, Buffer* otherBuffer, size_t copySize) {
+        CopyGpuVk(device->API_VULKAN(), commandBuffer->API_VULKAN(), otherBuffer->API_VULKAN().GetBuffer(), copySize);
     }
 
     void VulkanBuffer::CreateCpu(Device* device, BufferUsage usage, void* data, size_t size) {

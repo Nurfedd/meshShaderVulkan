@@ -3,7 +3,6 @@
 #include "IVulkan/vulkan_swapchain.hpp"
 #include "Volk/volk.h"
 #include <vector>
-
 namespace rhi {
 	class VulkanDevice;
 	class VulkanFence;

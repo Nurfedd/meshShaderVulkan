@@ -14,21 +14,26 @@ namespace rhi {
 		void CreateVk(VulkanDevice& device, VkDeviceSize bufferSize, VkBufferUsageFlags usage, VmaAllocationCreateFlags flags, VkMemoryPropertyFlags requiredFlags);
 		void CreateGpuVk(VulkanDevice& device, VkBufferUsageFlags usage, size_t size);
 		void CreateGpuVk(VulkanDevice& device, VulkanUploadContext vulkanUploadContext,VkBufferUsageFlags usage, void* data, size_t size);
+		void CreateGpuVk(VulkanDevice& device, VulkanCommandBuffer& vulkanCommandBuffer, VkBufferUsageFlags usage, void* data, size_t size);
 		void ReallocGpuVk(VulkanDevice& vulkanDevice, VulkanUploadContext vulkanUploadContext, size_t size);
 		void ReallocNoCopyGpuVk(VulkanDevice& vulkanDevice, size_t size);
 		void CreateCpuVk(VulkanDevice& vulkanDevice, VkBufferUsageFlags usage, void* data, size_t size);
 		void CopyGpuVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, VkBuffer dstBuffer, size_t copySize);
+		void CopyGpuVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, VkBuffer dstBuffer, size_t copySize);
 		void ReallocCpuVk(VulkanDevice& vulkanDeivce, size_t size);
 		void ReallocNoCopyCpuVk(VulkanDevice& device, size_t size);
 		void CopyCpuVk(VulkanDevice& vulkanDeivce, VulkanBuffer& other, size_t copySize);
 
+		void* GetBufferData() override;
 		void TransitionBufferVk(VulkanCommandBuffer& vulkanCommandBuffer, VulkanBufferState vulkanBufferState);
 
 		void CreateGpu(Device* device, BufferUsage usage, size_t size) override;
 		void CreateGpu(Device* device, UploadContext* uploadContext, BufferUsage usage, void* data, size_t size) override;
+		void CreateGpu(Device* device, CommandBuffer* commandBuffer, BufferUsage usage, void* data, size_t size) override;
 		void ReallocGpu(Device* device, UploadContext* uploadContext, size_t size) override;
 		void ReallocNoCopyGpu(Device* device, size_t size) override;
 		void CopyGpu(Device* device, UploadContext* uploadContext, Buffer* otherBuffer, size_t copySize) override;
+		void CopyGpu(Device* device, CommandBuffer* commandBuffer, Buffer* otherBuffer, size_t copySize) override;
 		
 		void CreateCpu(Device* device, BufferUsage usage, void* data, size_t size) override;
 		void ReallocCpu(Device* device, size_t size) override;

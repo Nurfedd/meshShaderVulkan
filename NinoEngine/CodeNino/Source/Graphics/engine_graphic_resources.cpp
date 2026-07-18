@@ -16,7 +16,7 @@ namespace nino_engine {
 		for (uint32_t i = 0; i < physicalDevices.size(); i++) {
 			PhysicalDevice* physicalDevice = physicalDevices[i];
 			QueueSupportedFlags flags = physicalDevice->flags;
-			if (flags & GRAPHICS_SUPPORT && flags & COMPUTE_SUPPORT && physicalDevice->SupportSurface(Surface)) {
+			if (flags & GRAPHICS_SUPPORT && flags & COMPUTE_SUPPORT && flags & TRANSFER_SUPPORT && physicalDevice->SupportSurface(Surface)) {
 				supportQueueDevices.push_back(physicalDevice);
 			}
 		}

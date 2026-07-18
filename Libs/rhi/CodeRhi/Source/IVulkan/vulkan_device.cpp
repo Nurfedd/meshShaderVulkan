@@ -1,6 +1,5 @@
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/vulkan_surface.hpp"
-#include "IVulkan/vulkan_validation_layers.hpp"
 #include "IVulkan/vulkan_instance.hpp"
 #include "IVulkan/vulkan_device_queue.hpp"
 #include "IVulkan/vulkan_fence.hpp"
@@ -98,13 +97,7 @@ namespace rhi {
 		createInfo.enabledLayerCount = 0;
 		createInfo.pNext = &features2;
 
-		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-			createInfo.ppEnabledLayerNames = validationLayers.data();
-		}
-		else {
-			createInfo.enabledLayerCount = 0;
-		}
+		
 		if (vkCreateDevice(vkPhysicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
 			throw std::exception("failed to create logical Device!");
 		}

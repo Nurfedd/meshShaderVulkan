@@ -22,6 +22,7 @@ namespace mt
         {
             Task* task = local.front();
             local.pop();
+            task->Execute();
             task->OnComplete();
             executedTask.push_back(task);
         }

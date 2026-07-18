@@ -11,6 +11,7 @@ namespace rhi {
 		void CreatePoolForImGui(VulkanDevice& vulkanDevice);
 		void AllocateSetsVk(VulkanDevice& vulkanDevice, VulkanDescriptorSet** sets,VulkanSetLayout* layouts,uint32_t setCount,uint32_t* variableCounts);
 		void AllocateSets(Device* device, DescriptorSet** sets, SetLayout** layouts, uint32_t setCount, uint32_t* variableCounts) override;
+		void Reset(Device* device) override;
 		void Create(Device* device, SetLayout** layouts, uint32_t layoutCount, uint32_t maxSets) override;
 		void DestroyVk(VulkanDevice& vulkanDevice);
 		void Destroy(Device* device) override;

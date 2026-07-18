@@ -157,10 +157,10 @@ namespace rhi {
         case ImageLayout::SHADER_READ_ONLY:
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        case ImageLayout::TRANSFER_SRC:
+        case ImageLayout::TRANSFER_SRC_LAYOUT:
             return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-        case ImageLayout::TRANSFER_DST:
+        case ImageLayout::TRANSFER_DST_LAYOUT:
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
         case ImageLayout::PRESENT:

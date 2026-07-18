@@ -18,15 +18,16 @@ namespace rhi {
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
         queueFamilies.resize(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-        int currentFlags = 0;
+
         for (VkQueueFamilyProperties& familyProperty : queueFamilies) {
             if (familyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                currentFlags = currentFlags | GRAPHICS_SUPPORT;
+                flags |= GRAPHICS_SUPPORT;
 
             if (familyProperty.queueFlags & VK_QUEUE_COMPUTE_BIT)
-                currentFlags = currentFlags | COMPUTE_SUPPORT;
+                flags |= COMPUTE_SUPPORT;
+            if (familyProperty.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                flags |= TRANSFER_SUPPORT;
         }
-        flags = static_cast<QueueSupportedFlags>(currentFlags);
 	}
 	bool VulkanPhysicalDevice::SupportExtensions() {
         uint32_t availableExtensionCount = 0;
@@ -68,79 +69,49 @@ namespace rhi {
         }
         return false;
 	}
-    std::unordered_map<QueueType, uint32_t> VulkanPhysicalDevice::GetFamilyQueueIndices(Surface* surface) {
+    std::unordered_map<QueueType, uint32_t> VulkanPhysicalDevice::GetFamilyQueueIndices(Surface* surface)
+    {
+
+        VulkanSurface& vulkanSurface = surface->API_VULKAN();
+
         std::unordered_map<QueueType, uint32_t> familyIndices;
+        std::unordered_map<uint32_t, uint32_t> familyQueueCount;
 
-        std::vector<uint32_t> queueCounts(queueFamilies.size());
-        for (uint32_t i = 0; i < queueFamilies.size(); i++)
-            queueCounts[i] = queueFamilies[i].queueCount;
+        // first try to find a family that could support all family indices
 
-        auto hasAvailableQueue = [&](uint32_t familyIndex) -> bool {
-            return queueCounts[familyIndex] > 0;
-            };
-
-        for (uint32_t familyIndex = 0; familyIndex < queueFamilies.size(); familyIndex++)
-        {
-            const auto& family = queueFamilies[familyIndex];
-
-            if ((family.queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-                !familyIndices.contains(GRAPHIC_QUEUE) &&
-                hasAvailableQueue(familyIndex))
-            {
-                familyIndices[GRAPHIC_QUEUE] = familyIndex;
-                queueCounts[familyIndex]--;
-                break;
+       
+        for (uint32_t familyIndex = 0; familyIndex < queueFamilies.size(); familyIndex++) {
+            VkQueueFamilyProperties& queueProperty = queueFamilies[familyIndex];
+            if (!familyIndices.contains(GRAPHIC_QUEUE)) {
+                if (familyQueueCount[familyIndex] < queueProperty.queueCount && queueProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                    familyIndices[GRAPHIC_QUEUE] = familyIndex;
+                    familyQueueCount[familyIndex]++;
+                }
             }
-        }
-
-        for (uint32_t familyIndex = 0; familyIndex < queueFamilies.size(); familyIndex++)
-        {
-            const auto& family = queueFamilies[familyIndex];
-
-            if ((family.queueFlags & VK_QUEUE_COMPUTE_BIT) &&
-                !familyIndices.contains(COMPUTE_QUEUE) &&
-                hasAvailableQueue(familyIndex))
-            {
-                familyIndices[COMPUTE_QUEUE] = familyIndex;
-                queueCounts[familyIndex]--;
-                break;
+            if (!familyIndices.contains(COMPUTE_QUEUE)) {
+                if (familyQueueCount[familyIndex] < queueProperty.queueCount && queueProperty.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                    familyIndices[COMPUTE_QUEUE] = familyIndex;
+                    familyQueueCount[familyIndex]++;
+                }
             }
-        }
-
-        if (surface)
-        {
-            VkSurfaceKHR vkSurface = surface->API_VULKAN().GetSurface();
-
-            auto trySetPresent = [&](uint32_t familyIndex)
-                {
+            if (!familyIndices.contains(TRANSFER_QUEUE)) {
+                if (familyQueueCount[familyIndex] < queueProperty.queueCount && queueProperty.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                    familyIndices[TRANSFER_QUEUE] = familyIndex;
+                    familyQueueCount[familyIndex]++;
+                }
+            }
+            if (!familyIndices.contains(PRESENT_QUEUE)) {
+                if (familyQueueCount[familyIndex] < queueProperty.queueCount) {
                     VkBool32 presentSupport = false;
-                    vkGetPhysicalDeviceSurfaceSupportKHR(device, familyIndex, vkSurface, &presentSupport);
-
-                    if (presentSupport && hasAvailableQueue(familyIndex))
-                    {
+                    vkGetPhysicalDeviceSurfaceSupportKHR(device, familyIndex, vulkanSurface.GetSurface(), &presentSupport);
+                    if (presentSupport) {
                         familyIndices[PRESENT_QUEUE] = familyIndex;
-                        queueCounts[familyIndex]--;
-                        return true;
+                        familyQueueCount[familyIndex]++;
                     }
-                    return false;
-                };
-
-           
-            if (familyIndices.contains(GRAPHIC_QUEUE))
-            {
-                uint32_t gfx = familyIndices[GRAPHIC_QUEUE];
-                if (trySetPresent(gfx))
-                    return familyIndices;
-            }
-
-           
-            for (uint32_t familyIndex = 0; familyIndex < queueFamilies.size(); familyIndex++)
-            {
-                if (trySetPresent(familyIndex))
-                    break;
+                }
             }
         }
-
+        
         return familyIndices;
     }
     VkPhysicalDeviceProperties VulkanPhysicalDevice::GetLimits() {

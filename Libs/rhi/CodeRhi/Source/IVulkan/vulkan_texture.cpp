@@ -81,7 +81,6 @@ namespace rhi {
 				0, 1,
 				VK_IMAGE_ASPECT_COLOR_BIT
 			);
-
 			vkCmdCopyBufferToImage(
 				cmd.commandBuffer,
 				staging.GetBuffer(),
