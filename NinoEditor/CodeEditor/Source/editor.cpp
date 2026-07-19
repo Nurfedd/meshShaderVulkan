@@ -49,17 +49,16 @@ namespace nino_editor {
 
 		RendererController* rendererController = engine.GetRendererController();
 		rendererController->OnPrevBeginFrame.Add(this, &NinoEditor::OnRenderThreadPrevBeginFrame);
-		rendererController->OnPrevRenderFrame.Add(this, &NinoEditor::OnRenderThreadPrevRenderFrame);
+		rendererController->OnPostBeginFrame.Add(this, &NinoEditor::OnRenderThreadPrevRenderFrame);
 		rendererController->OnCommandBufferRecorded.Add(this, &NinoEditor::RecordImGuiDrawData);
 		rendererController->OnBeginDestroy.Add(this, &NinoEditor::OnRendererDestroy);
-		rendererController->StartRender();
 		//engine.GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
 	}
 	void NinoEditor::Loop() {
 		while (!glfwWindowShouldClose(window))
 		{
 			glfwPollEvents();
-
+			engine.Update();
 		}
 	}
 	void NinoEditor::OnRenderThreadPrevBeginFrame() {

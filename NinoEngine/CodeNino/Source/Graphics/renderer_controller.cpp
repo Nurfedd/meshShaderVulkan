@@ -23,31 +23,55 @@ namespace nino_engine {
 
 		additionalSwapchainRenderer = renderInterface->InitDynamicRenderer();
 
-		
-
-	}
-	void RendererController::StartRender() {
 		TaskManager* taskManager = ServiceLocator::Get<TaskManager>();
-		currentRenderTask = taskManager->AsyncTask(TaskType::Render_Task, std::bind(&RendererController::RenderTaskAsync,this));
+		lastRenderTask = taskManager->AsyncTask(TaskType::Render_Task, std::bind(&RendererController::RenderTaskAsync, this));
+
+	}
+	
+	void RendererController::PushFrame(FrameData frameData) {
+		std::unique_lock lock(frameDataMutex);
+		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
+		uint32_t frameCount = engineResources->GetFrameInFlightCount();
+		
+		frameDataCV_notFull.wait(lock, [this,frameCount] {
+			return frameDatas.size() < frameCount || shouldStop;
+			});
+
+		if (shouldStop) return;
+
+		frameDatas.push(std::move(frameData));
+
+		lock.unlock();
+		frameDataCV_notEmpty.notify_one();
 	}
 
-	void RendererController::WaitRender() {
-		if (currentRenderTask) {
-			currentRenderTask->Wait();
-		}
-	}
 	void RendererController::RenderTaskAsync() {
-		while (!shouldStop) {
+		while (!shouldStop)
+		{
+			std::unique_lock lock(frameDataMutex);
+			frameDataCV_notEmpty.wait(lock, [this]() {
+				return !frameDatas.empty() || shouldStop;
+				});
+
+			if (shouldStop) {
+				return;
+			}
+			frameDatas.pop();
+			lock.unlock();
+			frameDataCV_notFull.notify_one();
 			OnPrevBeginFrame.Broadcast();
 			if (BeginFrame()) {
 				OnPostBeginFrame.Broadcast();
-				OnPrevRenderFrame.Broadcast();
 				RenderFrame();
 				OnPostRenderFrame.Broadcast();
 			}
 		}
 	}
-
+	void RendererController::WaitRender() {
+		if (lastRenderTask) {
+			lastRenderTask->Wait();
+		}
+	}
 
 	bool RendererController::BeginFrame() {
 		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
@@ -198,6 +222,7 @@ namespace nino_engine {
 		shouldStop = true;
 		WaitRender();
 		OnBeginDestroy.Broadcast();
+
 		for (uint32_t i = 0; i < frameCount; i++) {
 			renderInterface->DestroyCommandBuffer(graphicCommandBuffers[i]);
 		}

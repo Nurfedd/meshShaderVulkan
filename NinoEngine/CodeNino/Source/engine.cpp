@@ -19,7 +19,11 @@ namespace nino_engine {
 		rendererController.Create();
 	}
 
-
+	void NinoEngine::Update() {
+		// Build frame data and push to render thread queue
+		FrameData frameData{};
+		rendererController.PushFrame(frameData);
+	}
 	
 
 	

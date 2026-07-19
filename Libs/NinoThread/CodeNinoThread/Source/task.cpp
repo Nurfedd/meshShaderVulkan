@@ -7,7 +7,8 @@ namespace mt {
 	}
 	void Task::Wait() {
 		std::unique_lock lock(mutex);
-
+		if (completed)
+			return;
 		condition_variable.wait(lock, [this] {
 			return completed;
 			});

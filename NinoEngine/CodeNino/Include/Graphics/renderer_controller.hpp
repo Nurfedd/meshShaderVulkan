@@ -6,6 +6,7 @@
 #include "Interface/dynamic_renderer.hpp"
 #include "engine_graphic_resources.hpp"
 #include "service_locator.hpp"
+#include "frame_data.hpp"
 #include "task.h"
 #include <functional>
 #include <queue>
@@ -13,7 +14,6 @@
 
 DECLARE_DELEGATE(DOnPrevBeginFrame);
 DECLARE_DELEGATE(DOnPostBeginFrame);
-DECLARE_DELEGATE(DOnPrevRenderFrame);
 DECLARE_DELEGATE(DOnPostRenderFrame);
 DECLARE_DELEGATE(DOnCommandBufferRecorded, rhi::CommandBuffer*)
 DECLARE_DELEGATE(DOnDestroy)
@@ -29,8 +29,7 @@ namespace nino_engine {
 	class RendererController {
 	public :
 		void Create();
-		void StartRender();
-		void WaitRender();
+		void PushFrame(FrameData frameData);
 		void Destroy();
 		
 		template <typename T>
@@ -58,16 +57,22 @@ namespace nino_engine {
 		DOnDestroy OnBeginDestroy;
 		DOnPrevBeginFrame OnPrevBeginFrame;
 		DOnPostBeginFrame OnPostBeginFrame;
-		DOnPrevRenderFrame OnPrevRenderFrame;
 		DOnPostRenderFrame OnPostRenderFrame;
 	private :
 		bool BeginFrame();
 		void RenderFrame();
 		void PresentSwapchain();
 
+		void WaitRender();
 		void RenderTaskAsync();
 		bool shouldStop = false;
-		std::shared_ptr<mt::Task> currentRenderTask;
+
+		std::mutex frameDataMutex;
+		std::condition_variable frameDataCV_notFull;
+		std::condition_variable frameDataCV_notEmpty;
+		std::queue<FrameData> frameDatas;
+
+		std::shared_ptr<mt::Task> lastRenderTask;
 
 		rhi::DeviceQueue* graphicQueue = nullptr;
 		rhi::DeviceQueue* presentQueue = nullptr;

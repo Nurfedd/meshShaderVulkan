@@ -11,7 +11,7 @@ namespace nino_engine {
 	public :
 		void Init(GLFWwindow* window);
 		
-		
+		void Update();
 		void Destroy();
 
 		RendererController* GetRendererController() { return &rendererController; }
