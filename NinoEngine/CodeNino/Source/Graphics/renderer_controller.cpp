@@ -1,6 +1,7 @@
 #include "Graphics/renderer_controller.hpp"
 #include "Interface/graphic_api.hpp"
 #include "Graphics/engine_graphic_resources.hpp"
+#include "task_manager.hpp"
 #include "service_locator.hpp"
 using namespace rhi;
 namespace nino_engine {
@@ -21,8 +22,31 @@ namespace nino_engine {
 		commandPool->AllocateCommandBuffers(device, graphicCommandBuffers.data(), graphicCommandBuffers.size());
 
 		additionalSwapchainRenderer = renderInterface->InitDynamicRenderer();
+
+		
+
+	}
+	void RendererController::StartRender() {
+		TaskManager* taskManager = ServiceLocator::Get<TaskManager>();
+		currentRenderTask = taskManager->AsyncTask(TaskType::Render_Task, std::bind(&RendererController::RenderTaskAsync,this));
 	}
 
+	void RendererController::WaitRender() {
+		if (currentRenderTask) {
+			currentRenderTask->Wait();
+		}
+	}
+	void RendererController::RenderTaskAsync() {
+		while (!shouldStop) {
+			OnPrevBeginFrame.Broadcast();
+			if (BeginFrame()) {
+				OnPostBeginFrame.Broadcast();
+				OnPrevRenderFrame.Broadcast();
+				RenderFrame();
+				OnPostRenderFrame.Broadcast();
+			}
+		}
+	}
 
 
 	bool RendererController::BeginFrame() {
@@ -47,11 +71,7 @@ namespace nino_engine {
 		}
 		return acquireResult.success;
 	}
-	void RendererController::AddDrawDataFunc(std::function<void(rhi::CommandBuffer*)> func) {
-		if (func) {
-			onCommandRecorded = func;
-		}
-	}
+	
 	void RendererController::RenderFrame() {
 		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
 		Device* device = engineResources->Device;
@@ -122,25 +142,26 @@ namespace nino_engine {
 		submitInfo.waitSemaphoreInfo = waitSubmitInfo;
 		submitInfo.signalSemaphoreInfo = signalSubmitInfo;
 
-		if (onCommandRecorded) {
+		
+		
+		Attachment colorAttachment;
+		colorAttachment.texture = swapchainTexture;
+		colorAttachment.clearBuffer = false;
+		colorAttachment.texture = swapchainTexture;
 
-			Attachment colorAttachment;
-			colorAttachment.texture = swapchainTexture;
-			colorAttachment.clearBuffer = false;
-			colorAttachment.texture = swapchainTexture;
+		BeginRenderingInfo renderingInfo;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.colorAttachments = &colorAttachment;
+		renderingInfo.height = swapchain->GetHeight();
+		renderingInfo.width = swapchain->GetWidth();
 
-			BeginRenderingInfo renderingInfo;
-			renderingInfo.colorAttachmentCount = 1;
-			renderingInfo.colorAttachments = &colorAttachment;
-			renderingInfo.height = swapchain->GetHeight();
-			renderingInfo.width = swapchain->GetWidth();
+		renderingInfo.depthAttachment = nullptr;
 
-			renderingInfo.depthAttachment = nullptr;
+		additionalSwapchainRenderer->Begin(commandBuffer, renderingInfo);
+		OnCommandBufferRecorded.Broadcast(commandBuffer);
+		additionalSwapchainRenderer->End(commandBuffer);
+		
 
-			additionalSwapchainRenderer->Begin(commandBuffer, renderingInfo);
-			onCommandRecorded(commandBuffer);
-			additionalSwapchainRenderer->End(commandBuffer);
-		}
 		swapchain->PreparePresentImage(commandBuffer);
 		commandBuffer->End();
 
@@ -173,9 +194,10 @@ namespace nino_engine {
 		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
 		Device* device = engineResources->Device;
 		uint32_t frameCount = engineResources->GetFrameInFlightCount();
-
-		device->WaitIdle();
-
+		
+		shouldStop = true;
+		WaitRender();
+		OnBeginDestroy.Broadcast();
 		for (uint32_t i = 0; i < frameCount; i++) {
 			renderInterface->DestroyCommandBuffer(graphicCommandBuffers[i]);
 		}

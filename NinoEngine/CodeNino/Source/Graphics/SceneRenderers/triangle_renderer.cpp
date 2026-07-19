@@ -77,6 +77,7 @@ namespace nino_engine {
 		return renderedInfo;
 	}
 	void TriangleRenderer::Destroy(Device* device) {
+		SceneRenderer::Destroy(device);
 		renderInterface->DestroyShader(triangleFragmentShader, device);
 		renderInterface->DestroyShader(triangleVertexShader, device);
 		renderInterface->DestroyPipeline(trianglePipeline, device);

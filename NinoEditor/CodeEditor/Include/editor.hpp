@@ -8,9 +8,13 @@ namespace nino_editor {
 	public :
 		void Run(int width,int height,const char* label);
 	private :
+
 		void Init(int width, int height, const char* label);
-		void RecordImGuiDrawData(rhi::CommandBuffer* commandBuffer);
 		void InitImGui();
+		void OnRenderThreadPrevBeginFrame();
+		void OnRenderThreadPrevRenderFrame();
+		void RecordImGuiDrawData(rhi::CommandBuffer* commandBuffer);
+		void OnRendererDestroy();
 		void Loop();
 		void Destroy();
 

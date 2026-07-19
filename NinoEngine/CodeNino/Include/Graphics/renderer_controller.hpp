@@ -6,8 +6,18 @@
 #include "Interface/dynamic_renderer.hpp"
 #include "engine_graphic_resources.hpp"
 #include "service_locator.hpp"
+#include "task.h"
 #include <functional>
+#include <queue>
 #include <vector>
+
+DECLARE_DELEGATE(DOnPrevBeginFrame);
+DECLARE_DELEGATE(DOnPostBeginFrame);
+DECLARE_DELEGATE(DOnPrevRenderFrame);
+DECLARE_DELEGATE(DOnPostRenderFrame);
+DECLARE_DELEGATE(DOnCommandBufferRecorded, rhi::CommandBuffer*)
+DECLARE_DELEGATE(DOnDestroy)
+
 namespace nino_engine {
 	// this class is used to renderer multiple scene render context
 	struct SceneRenderContext {
@@ -19,11 +29,10 @@ namespace nino_engine {
 	class RendererController {
 	public :
 		void Create();
-
-		bool BeginFrame();
-		void RenderFrame();
-		void AddDrawDataFunc(std::function<void(rhi::CommandBuffer*)> func);
+		void StartRender();
+		void WaitRender();
 		void Destroy();
+		
 		template <typename T>
 		SceneRenderContext* CreateNewRenderContext(rhi::Texture* textureToDrawOn, bool renderOnSwapchain) {
 			if (textureToDrawOn == nullptr && !renderOnSwapchain)
@@ -44,9 +53,21 @@ namespace nino_engine {
 
 			return rawSceneRenderContext;
 		};
-	private :
+		DOnCommandBufferRecorded OnCommandBufferRecorded;
 
+		DOnDestroy OnBeginDestroy;
+		DOnPrevBeginFrame OnPrevBeginFrame;
+		DOnPostBeginFrame OnPostBeginFrame;
+		DOnPrevRenderFrame OnPrevRenderFrame;
+		DOnPostRenderFrame OnPostRenderFrame;
+	private :
+		bool BeginFrame();
+		void RenderFrame();
 		void PresentSwapchain();
+
+		void RenderTaskAsync();
+		bool shouldStop = false;
+		std::shared_ptr<mt::Task> currentRenderTask;
 
 		rhi::DeviceQueue* graphicQueue = nullptr;
 		rhi::DeviceQueue* presentQueue = nullptr;
@@ -55,6 +76,6 @@ namespace nino_engine {
 		std::vector<std::unique_ptr<SceneRenderContext>> renderContexts;
 
 		rhi::DynamicRenderer* additionalSwapchainRenderer = nullptr;
-		std::function<void(rhi::CommandBuffer*)> onCommandRecorded;
+		
 	};
 }

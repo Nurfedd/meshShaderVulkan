@@ -16,23 +16,11 @@ namespace nino_engine {
 		long long int r = 0;
 
 		
-		taskManager->ParallelForWait(80000, [](uint32_t index) mutable {
-			if (index == 0) {
-				std::cout << "ONLY 0";
-			}
-		});
-		
 		rendererController.Create();
-		
 	}
 
-	bool NinoEngine::BeginFrame() {
-		return rendererController.BeginFrame();
-	}
 
-	void NinoEngine::RenderFrame() {
-		rendererController.RenderFrame();
-	}
+	
 
 	
 

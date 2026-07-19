@@ -47,50 +47,50 @@ namespace nino_editor {
 		imGuiImplementation->Create(implCreateInfo);
 		RhiSetCurrentImplementation(imGuiImplementation);
 
-		engine.GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
+		RendererController* rendererController = engine.GetRendererController();
+		rendererController->OnPrevBeginFrame.Add(this, &NinoEditor::OnRenderThreadPrevBeginFrame);
+		rendererController->OnPrevRenderFrame.Add(this, &NinoEditor::OnRenderThreadPrevRenderFrame);
+		rendererController->OnCommandBufferRecorded.Add(this, &NinoEditor::RecordImGuiDrawData);
+		rendererController->OnBeginDestroy.Add(this, &NinoEditor::OnRendererDestroy);
+		rendererController->StartRender();
+		//engine.GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
 	}
 	void NinoEditor::Loop() {
 		while (!glfwWindowShouldClose(window))
 		{
 			glfwPollEvents();
 
-			ImGui_ImplGlfw_NewFrame();
-			imGuiImplementation->BeginFrame();
-			ImGui::NewFrame();
-
-			ImGui::Begin("oui");
-			//ImGui::GetIO().Framerate;
-			ImGui::Text(std::format("FPS : {}", uint32_t(ImGui::GetIO().Framerate)).c_str());
-			ImGui::Text("ah oui");
-			ImGui::End();
-
-			
-			if (!engine.BeginFrame()) {
-				continue;
-			}
-
-			ImGui::Render();
-
-			engine.RenderFrame();
 		}
 	}
+	void NinoEditor::OnRenderThreadPrevBeginFrame() {
+		ImGui_ImplGlfw_NewFrame();
+		imGuiImplementation->BeginFrame();
+		ImGui::NewFrame();
 
+		ImGui::Begin("oui");
+
+		ImGui::Text(std::format("FPS : {}", uint32_t(ImGui::GetIO().Framerate)).c_str());
+		ImGui::Text("ah oui");
+		ImGui::End();
+	}
+	void NinoEditor::OnRenderThreadPrevRenderFrame() {
+		ImGui::Render();
+	}
 	void NinoEditor::RecordImGuiDrawData(rhi::CommandBuffer* commandBuffer) {
 		if (imGuiImplementation) {
 			imGuiImplementation->AddDrawData(commandBuffer);
 		}
 	}
 
-	void NinoEditor::Destroy() {
+	void NinoEditor::OnRendererDestroy() {
 		imGuiImplementation->Destroy();
-
-		engine.Destroy();
-
-		
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
 
+	}
+	void NinoEditor::Destroy() {
+		engine.Destroy();
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
