@@ -1,17 +1,16 @@
 #include "service_locator.hpp"
 #include <map>
 namespace nino_engine {
-	std::unordered_map<std::type_index, ServiceContainer> ServiceLocator::services;
+	std::unordered_map<std::type_index, std::unique_ptr<Service>> ServiceLocator::services;
 	void ServiceLocator::Clear() {
-		std::map<int, std::vector<Service*>> servicePriorities;
-
 		for (auto& pair : services) {
-			servicePriorities[pair.second.priority].push_back(pair.second.service);
+			std::unique_ptr<Service>& service = pair.second;
+			service->OnPreDestroy();
 		}
-		for (auto& pair : servicePriorities) {
-			for (Service* service : pair.second) {
-				delete service;
-			}
+		for (auto& pair : services) {
+			std::unique_ptr<Service>& service = pair.second;
+			service->OnPostDestroy();
 		}
+		services.clear();// call destructor but prefer to use PostDestroy and PreDestroy
 	}
 }

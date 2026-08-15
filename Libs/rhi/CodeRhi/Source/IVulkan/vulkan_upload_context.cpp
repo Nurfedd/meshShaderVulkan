@@ -3,7 +3,7 @@
 namespace rhi {
 	void VulkanUploadContext::Create(Device* device) {
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		DeviceQueue* graphicQueue = device->GetQueue(GRAPHIC_QUEUE);
+		DeviceQueue* graphicQueue = device->GetGraphicQueue();
 		queue = &graphicQueue->API_VULKAN();
 
 		fence.CreateVk(vulkanDevice, VK_FENCE_CREATE_SIGNALED_BIT);

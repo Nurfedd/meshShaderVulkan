@@ -8,20 +8,16 @@ using namespace nino_engine;
 namespace nino_editor {
 	void NinoEditor::Run(int width, int height, const char* label) {
 		Init(width, height, label);
-		Loop();
 		Destroy();
 	}
 	void NinoEditor::Init(int width, int height, const char* label) {
-		glfwInit();
-
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		window = glfwCreateWindow(width, height, label, nullptr, nullptr);
-		engine.Init(window);
+		window = engine.Init(width,height,label);
 		glfwMakeContextCurrent(window);
 
 		engine.GetRendererController()->CreateNewRenderContext<TriangleRenderer>(nullptr, true);
 		InitImGui();
+
+		engine.Start();
 	}
 	void NinoEditor::InitImGui() {
 		ImGui::CreateContext();
@@ -54,13 +50,7 @@ namespace nino_editor {
 		rendererController->OnBeginDestroy.Add(this, &NinoEditor::OnRendererDestroy);
 		//engine.GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
 	}
-	void NinoEditor::Loop() {
-		while (!glfwWindowShouldClose(window))
-		{
-			glfwPollEvents();
-			engine.Update();
-		}
-	}
+	
 	void NinoEditor::OnRenderThreadPrevBeginFrame() {
 		ImGui_ImplGlfw_NewFrame();
 		imGuiImplementation->BeginFrame();
@@ -89,8 +79,6 @@ namespace nino_editor {
 
 	}
 	void NinoEditor::Destroy() {
-		engine.Destroy();
-		glfwDestroyWindow(window);
-		glfwTerminate();
+		
 	}
 }

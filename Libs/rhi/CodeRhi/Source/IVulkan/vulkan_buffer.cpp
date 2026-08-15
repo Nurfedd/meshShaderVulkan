@@ -66,6 +66,19 @@ namespace rhi {
         vmaDestroyBuffer(vulkanDevice.GetAllocator(), oldBuffer, oldAllocation);
     }
 
+    void VulkanBuffer::ReallocGpuVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, size_t newSize) {
+        CheckGpu("Realloc");
+        VmaAllocation oldAllocation = allocation;
+        size_t oldSize = bufferSize;
+
+        VkBuffer oldBuffer = buffer;
+        CreateGpuVk(vulkanDevice, vkBufferUsage, newSize);
+        size_t copySize = std::min(oldSize, newSize);
+
+        CopyGpuVk(vulkanDevice, vulkanCommandBuffer, oldBuffer, copySize);
+        vmaDestroyBuffer(vulkanDevice.GetAllocator(), oldBuffer, oldAllocation);
+    }
+
     void VulkanBuffer::ReallocNoCopyGpuVk(VulkanDevice& vulkanDevice, size_t size) {
         CheckGpu("Realloc");
         Destroy(vulkanDevice);
@@ -176,6 +189,10 @@ namespace rhi {
 
     void VulkanBuffer::ReallocGpu(Device* device, UploadContext* uploadContext, size_t size) {
         ReallocGpuVk(device->API_VULKAN(), uploadContext->API_VULKAN(), size);
+    }
+
+    void VulkanBuffer::ReallocGpu(Device* device, CommandBuffer* commandBuffer, size_t size) {
+        ReallocGpuVk(device->API_VULKAN(), commandBuffer->API_VULKAN(), size);
     }
 
     void VulkanBuffer::ReallocNoCopyGpu(Device* device, size_t size) {

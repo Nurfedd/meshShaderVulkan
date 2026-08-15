@@ -9,11 +9,11 @@ namespace nino_engine {
 	
 	class NinoEngine {
 	public :
-		void Init(GLFWwindow* window);
-		
-		void Update();
-		void Destroy();
+		GLFWwindow* Window;
 
+		GLFWwindow* Init(int width,int height,const char* windowTitle);
+		void Start();
+		
 		RendererController* GetRendererController() { return &rendererController; }
 		
 		float GetFPS() { return 1.f / deltaTime; }
@@ -22,7 +22,10 @@ namespace nino_engine {
 
 		float lastTime = 0.f;
 		float deltaTime = 0.f;
-		
+
 		RendererController rendererController;
+
+		void Update();
+		void Destroy();
 	};
 }

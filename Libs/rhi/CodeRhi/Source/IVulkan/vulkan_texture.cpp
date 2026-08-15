@@ -40,11 +40,18 @@ namespace rhi {
 	}
 	
 	void VulkanTexture::UploadVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, void* pixels, uint32_t channels) {
+		
+		uploadContext.Upload(vulkanDevice,[&](VulkanCommandBuffer cmd) {
+			UploadVk(vulkanDevice, cmd, pixels, channels);
+			});
+	}
+
+	void VulkanTexture::UploadVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, void* pixels, uint32_t channels) {
 		uint32_t imageSize = textureHeight * textureWidth * channels;
 
 		VulkanBuffer staging;
 		staging.CreateCpuVk(vulkanDevice, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, pixels, imageSize);
-		
+
 		VkExtent3D extent;
 		extent.width = textureWidth;
 		extent.height = textureHeight;
@@ -57,53 +64,49 @@ namespace rhi {
 
 		uint32_t mipLevel = vulkanImage.GetMipLevel();
 
-		uploadContext.Upload(vulkanDevice,[&](VulkanCommandBuffer cmd) {
-			
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
 
-			VkBufferImageCopy region{};
-			region.bufferOffset = 0;
-			region.bufferRowLength = 0;
-			region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
 
-			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			region.imageSubresource.mipLevel = 0;
-			region.imageSubresource.baseArrayLayer = 0;
-			region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = extent;
 
-			region.imageOffset = { 0, 0, 0 };
-			region.imageExtent = extent;
+		vulkanImage.TransitionImage(
+			vulkanCommandBuffer,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_ACCESS_2_TRANSFER_WRITE_BIT,
+			0, 1,
+			VK_IMAGE_ASPECT_COLOR_BIT
+		);
+		vkCmdCopyBufferToImage(
+			vulkanCommandBuffer.commandBuffer,
+			staging.GetBuffer(),
+			image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&region
+		);
 
-			vulkanImage.TransitionImage(
-				cmd,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-				VK_ACCESS_2_TRANSFER_WRITE_BIT,
-				0, 1,
-				VK_IMAGE_ASPECT_COLOR_BIT
-			);
-			vkCmdCopyBufferToImage(
-				cmd.commandBuffer,
-				staging.GetBuffer(),
-				image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1,
-				&region
-			);
+		vulkanImage.TransitionImage(
+			vulkanCommandBuffer,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+			VK_ACCESS_2_TRANSFER_WRITE_BIT,
+			VK_ACCESS_2_TRANSFER_READ_BIT,
+			0, 1,
+			VK_IMAGE_ASPECT_COLOR_BIT
+		);
 
-			vulkanImage.TransitionImage(
-				cmd,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-				VK_ACCESS_2_TRANSFER_WRITE_BIT,
-				VK_ACCESS_2_TRANSFER_READ_BIT,
-				0, 1,
-				VK_IMAGE_ASPECT_COLOR_BIT
-			);
-
-			UploadMipmap(cmd);
-			});
+		UploadMipmap(vulkanCommandBuffer);
 		staging.Destroy(vulkanDevice);
 	}
 
@@ -207,6 +210,10 @@ namespace rhi {
 	}
 	void VulkanTexture::Upload(Device* device, UploadContext* uploadContext, void* pixels, uint32_t channels) {
 		UploadVk(device->API_VULKAN(), uploadContext->API_VULKAN(), pixels, channels);
+	}
+
+	void VulkanTexture::Upload(Device* device, CommandBuffer* commandBuffer, void* pixels, uint32_t channels) {
+		UploadVk(device->API_VULKAN(), commandBuffer->API_VULKAN(), pixels, channels);
 	}
 
 	bool VulkanTexture::MakeImageReadableInShader(CommandBuffer* commandBuffer, PipelineStageFlags dstStage, AccessFlags accessFlags) {

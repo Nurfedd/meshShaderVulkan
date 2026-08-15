@@ -5,9 +5,9 @@
 using namespace rhi;
 namespace nino_engine {
 	void SceneRenderer::Create(Device* device) {
-		graphicQueue = device->GetQueue(GRAPHIC_QUEUE);
-		presentQueue = device->GetQueue(PRESENT_QUEUE);
-		computeQueue = device->GetQueue(COMPUTE_QUEUE);
+		graphicQueue = device->GetGraphicQueue();
+		presentQueue = device->GetPresentQueue();
+		computeQueue = device->GetComputeQueue();
 
 		EngineGraphicResources* engineGraphicResources = ServiceLocator::Get<EngineGraphicResources>();
 		CommandPool* commandPool = engineGraphicResources->GraphicCommandPool;

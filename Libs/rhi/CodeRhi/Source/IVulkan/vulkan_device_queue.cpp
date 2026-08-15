@@ -8,7 +8,7 @@
 
 namespace rhi {
 	
-	void VulkanDeviceQueue::Create(VkDevice vulkanDevice, uint32_t _familyIndex) {
+	VulkanDeviceQueue::VulkanDeviceQueue(VkDevice vulkanDevice, uint32_t _familyIndex) {
 		familyIndex = _familyIndex;
 		vkGetDeviceQueue(vulkanDevice, familyIndex, 0, &queue);
 		

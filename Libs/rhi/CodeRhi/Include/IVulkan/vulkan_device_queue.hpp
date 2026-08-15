@@ -30,7 +30,7 @@ namespace rhi {
 
 	class VulkanDeviceQueue : public DeviceQueue {
 	public :
-		void Create(VkDevice vulkanDevice, uint32_t familyIndex);
+		VulkanDeviceQueue(VkDevice vulkanDevice, uint32_t familyIndex);
 		void SubmitVk(VulkanCommandBuffer* commandBuffer, uint32_t commandBufferCount, VulkanSubmitInfo submitInfo,VulkanFence* fence);
 		void SubmitVk(VulkanCommandBuffer* commandBuffer, uint32_t commandBufferCount, VulkanFence* fence);
 		bool PresentVk(VulkanPresentInfo vulkanPresentInfo);

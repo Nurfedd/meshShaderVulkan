@@ -16,20 +16,25 @@ namespace rhi {
 		VulkanPhysicalDevice& vulkanPhysicalDevice = physicalDevice->API_VULKAN();
 		VulkanInstance& vulkanInstance = instance->API_VULKAN();
 		VkPhysicalDevice vkPhysicalDevice = GetVkPhysicalDevice();
-		std::unordered_map<QueueType, uint32_t> queueFamilyIndice = vulkanPhysicalDevice.GetFamilyQueueIndices(surface);
-		std::unordered_map<uint32_t, uint32_t> queueFamilyCount;
+		PhysicalDeviceQueueInfos physicalDeviceQueueInfos = vulkanPhysicalDevice.GetFamilyQueueIndices(surface);
 
-		for (auto& pair : queueFamilyIndice) {
-			queueFamilyCount[pair.second]++;
+		std::unordered_map<uint32_t, uint32_t> queueFamilyIndice = physicalDeviceQueueInfos.GetQueueFamilyIndiceAndCount();
+
+		if (!(physicalDeviceQueueInfos.graphicQueue.IsValid() && physicalDeviceQueueInfos.computeQueue.IsValid())) {
+			throw std::exception("Physical device doesnt support enough features.");
+		}
+		
+		if (!(vulkanPhysicalDevice.FamilySupportPresent(physicalDeviceQueueInfos.graphicQueue.familyIndice, surface->API_VULKAN()))) {
+			throw std::exception("Graphic family doesn't support present");
 		}
 
-		std::vector< VkDeviceQueueCreateInfo> queuesCreateInfos (queueFamilyCount.size());
-		std::vector<std::vector<float>> queuePriorities(queueFamilyCount.size());
+		std::vector< VkDeviceQueueCreateInfo> queuesCreateInfos (queueFamilyIndice.size());
+		std::vector<std::vector<float>> queuePriorities(queueFamilyIndice.size());
 		int i = 0;
 
 		
 
-		for (auto& pair : queueFamilyCount) {
+		for (auto& pair : queueFamilyIndice) {
 			queuePriorities[i].resize(pair.second);
 			std::fill(queuePriorities[i].begin(), queuePriorities[i].end(), 1.f);
 			VkDeviceQueueCreateInfo queueInfo{};
@@ -103,10 +108,16 @@ namespace rhi {
 		}
 		volkLoadDevice(device);
 		
-		for (auto& pair : queueFamilyIndice) {
-			VulkanDeviceQueue* newQueue = new VulkanDeviceQueue;
-			newQueue->Create(device, queueFamilyIndice[pair.first]);
-			queues[pair.first] = newQueue;
+		GraphicQueue = std::make_shared<VulkanDeviceQueue>(device,physicalDeviceQueueInfos.graphicQueue.familyIndice);
+		PresentQueue = GraphicQueue;
+
+		ComputeQueue = std::make_unique<VulkanDeviceQueue>(device, physicalDeviceQueueInfos.computeQueue.familyIndice);
+
+		if (physicalDeviceQueueInfos.transferQueueCpuToGpu.IsValid()) {
+			PrimaryTransferQueue = std::make_unique<VulkanDeviceQueue>(device, physicalDeviceQueueInfos.transferQueueCpuToGpu.familyIndice);
+		}
+		if (physicalDeviceQueueInfos.transferQueueGpuToCpu.IsValid()) {
+			SecondaryTransferQueue = std::make_unique<VulkanDeviceQueue>(device, physicalDeviceQueueInfos.transferQueueGpuToCpu.familyIndice);
 		}
 		InitAllocator(vulkanInstance.GetVkInstance());
 	}

@@ -6,23 +6,39 @@
 using namespace rhi;
 using namespace mt;
 namespace nino_engine {
-	void NinoEngine::Init(GLFWwindow* window) {
+	GLFWwindow* NinoEngine::Init(int width, int height, const char* windowTitle) {
 		rhi::Init(VULKAN_API);
-		EngineGraphicResources* engineResources = ServiceLocator::RegisterService<EngineGraphicResources>(0);
-		TaskManager* taskManager = ServiceLocator::RegisterService<TaskManager>(0);
+		glfwInit();
 
-		
-		engineResources->Create(window);
-		long long int r = 0;
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		Window = glfwCreateWindow(width, height, windowTitle, nullptr, nullptr);
 
-		
+		EngineGraphicResources* engineResources = ServiceLocator::RegisterService<EngineGraphicResources>();
+		TaskManager* taskManager = ServiceLocator::RegisterService<TaskManager>();
+
+		engineResources->Create(Window);
 		rendererController.Create();
+
+		return Window;
 	}
 
+	void NinoEngine::Start() {
+		while (!glfwWindowShouldClose(Window))
+		{
+			glfwPollEvents();
+			Update();
+		}
+		Destroy();
+	}
 	void NinoEngine::Update() {
 		// Build frame data and push to render thread queue
-		FrameData frameData{};
-		rendererController.PushFrame(frameData);
+		int width, height;
+		glfwGetWindowSize(Window, &width, &height);
+		if (width > 0 && height > 0) {
+			FrameData frameData{};
+			rendererController.PushFrame(frameData);
+		}
 	}
 	
 
@@ -36,5 +52,8 @@ namespace nino_engine {
 		device->WaitIdle();
 		rendererController.Destroy();
 		ServiceLocator::Clear();
+
+		glfwDestroyWindow(Window);
+		glfwTerminate();
 	}
 }

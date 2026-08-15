@@ -1,8 +1,10 @@
 #pragma once
 #include "Interface/surface.hpp"
 #include "nino_core.hpp"
+#include <optional>
 namespace rhi {
 	class VulkanPhysicalDevice;
+	
 	enum QueueSupportedFlags {
 		NONE = 0,
 		GRAPHICS_SUPPORT = 1 << 1,
@@ -16,6 +18,7 @@ namespace rhi {
 		PRESENT_QUEUE,
 		TRANSFER_QUEUE
 	};
+	
 	class PhysicalDevice {
 	public :
 		bool isDiscreteGPU;
@@ -23,7 +26,7 @@ namespace rhi {
 		virtual ~PhysicalDevice() = default;
 		virtual bool SupportSurface(Surface* surface) = 0;
 		virtual VulkanPhysicalDevice& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanPhysicalDevice"); }
-
+		
 	protected :
 		virtual void LoadInfo() = 0;
 

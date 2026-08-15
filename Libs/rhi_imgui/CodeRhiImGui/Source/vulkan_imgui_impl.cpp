@@ -16,9 +16,10 @@ void Rhi_Vulkan_ImGui_Implementation::Create(BeginImpl beginInfo) {
 	Device* device = beginInfo.device;
 	uint32_t imageCount = beginInfo.swapchain->GetImageCount();
 
+	
+	this->device = beginInfo.device;
 	VulkanDevice& vulkanDevice = device->API_VULKAN();
-	this->vulkanDevice = vulkanDevice;
-	DeviceQueue* graphicQueue = vulkanDevice.GetQueue(GRAPHIC_QUEUE);
+	DeviceQueue* graphicQueue = vulkanDevice.GetGraphicQueue();
 	VulkanDeviceQueue vulkanGraphicQueue = graphicQueue->API_VULKAN();
 	VulkanInstance& vulkanInstance = beginInfo.instance->API_VULKAN();
 
@@ -74,6 +75,7 @@ void Rhi_Vulkan_ImGui_Implementation::AddDrawData(CommandBuffer* commandBuffer) 
 }
 
 ImGuiTextureHandle* Rhi_Vulkan_ImGui_Implementation::CreateEmptyImageHandle(uint32_t width, uint32_t height) {
+	VulkanDevice& vulkanDevice = device->API_VULKAN();
 	VulkanTexture newTexture;
 	VulkanTextureCreateInfo createInfo;
 	createInfo.height = height;
@@ -91,6 +93,7 @@ ImGuiTextureHandle* Rhi_Vulkan_ImGui_Implementation::CreateEmptyImageHandle(uint
 }
 
 void Rhi_Vulkan_ImGui_Implementation::ResizeHandle(ImGuiTextureHandle* handle, uint32_t width, uint32_t height) {
+	VulkanDevice& vulkanDevice = device->API_VULKAN();
 	VulkanImGuiTextureHandle& vulkanTextureHandle = handle->API_VULKAN();
 	VulkanTexture& vulkanTexture = vulkanTextureHandle.vulkanTexture;
 
@@ -104,6 +107,7 @@ void Rhi_Vulkan_ImGui_Implementation::ResizeHandle(ImGuiTextureHandle* handle, u
 }
 
 void Rhi_Vulkan_ImGui_Implementation::DestroyHandle(ImGuiTextureHandle* handle) {
+	VulkanDevice& vulkanDevice = device->API_VULKAN();
 	vulkanDevice.WaitIdle();
 	VulkanImGuiTextureHandle& vulkanHandle = handle->API_VULKAN();
 
@@ -113,6 +117,7 @@ void Rhi_Vulkan_ImGui_Implementation::DestroyHandle(ImGuiTextureHandle* handle) 
 }
 
 void Rhi_Vulkan_ImGui_Implementation::UploadPixel(ImGuiTextureHandle* handle, void* pixels, uint32_t channelCount) {
+	VulkanDevice& vulkanDevice = device->API_VULKAN();
 	VulkanImGuiTextureHandle& vulkanHandle = handle->API_VULKAN();
 	VulkanTexture& vulkanTexture = vulkanHandle.vulkanTexture;
 	
@@ -144,6 +149,7 @@ void Rhi_Vulkan_ImGui_Implementation::BeginFrame() {
 }
 
 void Rhi_Vulkan_ImGui_Implementation::Destroy() {
+	VulkanDevice& vulkanDevice = device->API_VULKAN();
 	vulkanDevice.WaitIdle();
 	ImGui_ImplVulkan_Shutdown();
 	vulkanDescriptorPool.DestroyVk(vulkanDevice);

@@ -19,7 +19,7 @@ public :
 private :
 	ImTextureID CreateId(rhi::VulkanTexture& vulkanTexture);
 	void DestroyTexture(ImTextureID textureId);
-	rhi::VulkanDevice vulkanDevice;
+	rhi::Device* device;
 	rhi::VulkanDescriptorPool vulkanDescriptorPool;
 	rhi::VulkanSampler vulkanSampler;
 	rhi::VulkanUploadContext vulkanUploadContext;

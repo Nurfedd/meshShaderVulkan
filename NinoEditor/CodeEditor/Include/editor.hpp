@@ -15,7 +15,6 @@ namespace nino_editor {
 		void OnRenderThreadPrevRenderFrame();
 		void RecordImGuiDrawData(rhi::CommandBuffer* commandBuffer);
 		void OnRendererDestroy();
-		void Loop();
 		void Destroy();
 
 		GLFWwindow* window = nullptr;

@@ -22,6 +22,7 @@ namespace rhi {
 	void VulkanCommandPool::AllocateCommandBufferVk(VulkanDevice& vulkanDevice, VkCommandBuffer* commandBuffers, uint32_t count, VkCommandBufferLevel level) {
 		if (count == 0)
 			return;
+		
 		VkCommandBufferAllocateInfo allocateInfo{};
 		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocateInfo.commandBufferCount = count;

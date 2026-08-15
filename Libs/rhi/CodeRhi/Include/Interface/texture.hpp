@@ -22,6 +22,7 @@ namespace rhi {
 		virtual void Create(Device* device, TextureCreateInfo createInfo) = 0;
 		virtual void Resize(Device*, uint32_t width, uint32_t height) = 0;
 		virtual void Upload(Device* device,UploadContext* uploadContext,void* pixels, uint32_t channels) = 0;
+		virtual void Upload(Device* device, CommandBuffer* commandBuffer, void* pixels, uint32_t channels) = 0;
 		virtual bool MakeImageReadableInShader(CommandBuffer* commandBuffer,PipelineStageFlags dstStage,AccessFlags accessFlags) = 0;
 		virtual bool CanBeUsedInShader() = 0;
 		virtual void Destroy(Device* device) = 0;

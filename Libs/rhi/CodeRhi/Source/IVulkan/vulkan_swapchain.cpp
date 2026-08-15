@@ -24,8 +24,8 @@ namespace rhi {
 		VkSurfaceCapabilitiesKHR surfaceCapabilites;
 		vulkanSurface.GetCapabilities(vulkanDevice.GetVkPhysicalDevice(), &surfaceCapabilites);
 
-		DeviceQueue* graphicQueue = device->GetQueue(GRAPHIC_QUEUE);
-		DeviceQueue* presentQueue = device->GetQueue(PRESENT_QUEUE);
+		DeviceQueue* graphicQueue = device->GetGraphicQueue();
+		DeviceQueue* presentQueue = device->GetPresentQueue();
 
 		if (graphicQueue == nullptr || presentQueue == nullptr) {
 			throw std::exception("Cannot create a Swapchain without present queue and graphic queue");

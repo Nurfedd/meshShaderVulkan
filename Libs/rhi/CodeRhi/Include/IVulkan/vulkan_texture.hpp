@@ -3,6 +3,7 @@
 #include "IVulkan/vulkan_image.hpp"
 #include "IVulkan/vulkan_image_view.hpp"
 #include "IVulkan/vulkan_upload_context.hpp"
+#include "IVulkan/vulkan_command_buffer.hpp"
 namespace rhi {
 	struct VulkanTextureCreateInfo {
 		VulkanTextureCreateInfo() = default;
@@ -21,7 +22,9 @@ namespace rhi {
 		void CreateVk(VulkanImage image, VulkanImageView imageView, uint32_t width, uint32_t height) { vulkanImage = image; vulkanImageView = imageView; textureWidth = width; textureHeight = height; };
 		
 		void UploadVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, void* pixels, uint32_t channels);
+		void UploadVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, void* pixels, uint32_t channels);
 		void Upload(Device* device, UploadContext* uploadContext, void* pixels, uint32_t channels) override;
+		void Upload(Device* device, CommandBuffer* commandBuffer, void* pixels, uint32_t channels) override;
 		bool MakeImageReadableInShader(CommandBuffer* commandBuffer,PipelineStageFlags dstStage, AccessFlags accessFlags) override;
 		bool CanBeUsedInShader() override;
 		void ResizeVk(VulkanDevice& vulkanDevice, uint32_t width, uint32_t height);

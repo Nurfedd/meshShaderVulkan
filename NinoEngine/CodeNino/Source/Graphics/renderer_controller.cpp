@@ -45,6 +45,7 @@ namespace nino_engine {
 		frameDataCV_notEmpty.notify_one();
 	}
 
+	// check if any frame data available
 	void RendererController::RenderTaskAsync() {
 		while (!shouldStop)
 		{

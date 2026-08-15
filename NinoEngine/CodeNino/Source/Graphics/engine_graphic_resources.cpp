@@ -36,8 +36,8 @@ namespace nino_engine {
 
 		Device->Create(Instance, choosedPhysicalDevice, Surface);
 
-		GraphicQueue = Device->GetQueue(GRAPHIC_QUEUE);
-		PresentQueue = Device->GetQueue(PRESENT_QUEUE);
+		GraphicQueue = Device->GetGraphicQueue();
+		PresentQueue = Device->GetPresentQueue();
 		Surface->LoadFormats(Device);
 		// swapchain
 		Swapchain = renderInterface->InitSwapchain();
@@ -72,7 +72,7 @@ namespace nino_engine {
 		}
 
 		GraphicCommandPool = renderInterface->InitCommandPool();
-		GraphicCommandPool->Create(Device, Device->GetQueue(GRAPHIC_QUEUE));
+		GraphicCommandPool->Create(Device, Device->GetGraphicQueue());
 	}
 	uint32_t EngineGraphicResources::GetFrameInFlightCount() {
 		return Swapchain->GetImageCount();
