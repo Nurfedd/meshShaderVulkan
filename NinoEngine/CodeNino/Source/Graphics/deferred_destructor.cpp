@@ -1,6 +1,7 @@
 #include "Graphics/deferred_destructor.hpp"
 #include "Interface/graphic_api.hpp"
 #include "Graphics/engine_graphic_resources.hpp"
+#include "engine.hpp"
 using namespace rhi;
 
 namespace nino_engine {
@@ -21,7 +22,7 @@ namespace nino_engine {
 	}
 
 	void DeferredDestructor::ClearBuffersAtFrame(uint32_t frameIndex) {
-		EngineGraphicResources* graphicsResources = ServiceLocator::Get<EngineGraphicResources>();
+		EngineGraphicResources* graphicsResources = GEngine->EngineServices.Get<EngineGraphicResources>();
 		
 		for (Buffer* buffer : deferredBuffers[frameIndex]) {
 			renderInterface->DestroyBuffer(buffer, graphicsResources->Device);

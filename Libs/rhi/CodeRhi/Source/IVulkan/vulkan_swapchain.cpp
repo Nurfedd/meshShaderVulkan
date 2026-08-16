@@ -34,9 +34,6 @@ namespace rhi {
 		VulkanDeviceQueue& vulkanGraphicQueue = graphicQueue->API_VULKAN();
 		VulkanDeviceQueue& vulkanPresentQueue = presentQueue->API_VULKAN();
 
-		queueOwnership.AddFamily(vulkanGraphicQueue.GetFamilyIndex());
-		queueOwnership.AddFamily(vulkanPresentQueue.GetFamilyIndex());
-
 		if (!surface->SupportPresentMode(presentMode) || !surface->SupportSurfaceFormat(surfaceFormat)) {
 			presentMode = PresentMode::FIFO_MODE; // always supported
 			surfaceFormat = SurfaceFormat(RGBA8_SRGB, SRGB_NON_LINEAR); // always supported
@@ -57,8 +54,7 @@ namespace rhi {
 		swapchainExtent = capabilities.currentExtent;
 		VkSwapchainKHR oldSwaphain = swapchain;
 
-		std::unordered_set<uint32_t> familyIndicesSet = queueOwnership.GetIndices();
-		std::vector<uint32_t> familyIndices(familyIndicesSet.begin(), familyIndicesSet.end());
+		
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -73,11 +69,9 @@ namespace rhi {
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = ToVulkanPresentMode(presentMode);
 		createInfo.clipped = VK_TRUE;
-		createInfo.imageSharingMode = queueOwnership.GetSharingMode();
-		createInfo.pQueueFamilyIndices = familyIndices.data();
-		createInfo.queueFamilyIndexCount = familyIndices.size();
+		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		
-		createInfo.oldSwapchain = swapchain;
+		createInfo.oldSwapchain = oldSwaphain;
 
 		if (vkCreateSwapchainKHR(vulkanDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
 			throw std::exception("Swapchain creation failed");

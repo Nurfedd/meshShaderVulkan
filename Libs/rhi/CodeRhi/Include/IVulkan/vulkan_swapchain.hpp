@@ -16,7 +16,7 @@ namespace rhi {
 		uint32_t GetWidth() override { return swapchainExtent.width; }
 		uint32_t GetHeight() override { return swapchainExtent.height; }
 	private :
-		QueueOwnership queueOwnership;
+		
 		VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 		VkExtent2D swapchainExtent;
 		void DestroyImages(Device* device) override;

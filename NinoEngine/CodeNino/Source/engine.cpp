@@ -6,6 +6,7 @@
 using namespace rhi;
 using namespace mt;
 namespace nino_engine {
+	nino_engine::NinoEngine* GEngine = nullptr;
 	GLFWwindow* NinoEngine::Init(int width, int height, const char* windowTitle) {
 		rhi::Init(VULKAN_API);
 		glfwInit();
@@ -13,9 +14,9 @@ namespace nino_engine {
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		Window = glfwCreateWindow(width, height, windowTitle, nullptr, nullptr);
-
-		EngineGraphicResources* engineResources = ServiceLocator::RegisterService<EngineGraphicResources>();
-		TaskManager* taskManager = ServiceLocator::RegisterService<TaskManager>();
+		
+		EngineGraphicResources* engineResources = EngineServices.RegisterService<EngineGraphicResources>();
+		TaskManager* taskManager = EngineServices.RegisterService<TaskManager>();
 
 		engineResources->Create(Window);
 		rendererController.Create();
@@ -45,15 +46,27 @@ namespace nino_engine {
 	
 
 	void NinoEngine::Destroy() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
+		EngineGraphicResources* engineResources = EngineServices.Get<EngineGraphicResources>();
 		Device* device = engineResources->Device;
-		uint32_t frameCount = engineResources->GetFrameInFlightCount();
-
+		
 		device->WaitIdle();
 		rendererController.Destroy();
-		ServiceLocator::Clear();
+		EngineServices.Clear();
 
 		glfwDestroyWindow(Window);
 		glfwTerminate();
+		rhi::Close();
+	}
+	GLFWwindow* StartGlobalEngine(int width, int height, const char* windowTitle) {
+		GEngine = new NinoEngine;
+		return GEngine->Init(width,height,windowTitle);
+	}
+
+	void DeleteGlobalEngine() {
+		if (GEngine != nullptr) {
+			delete GEngine;
+			GEngine = nullptr;
+		}
 	}
 }
+

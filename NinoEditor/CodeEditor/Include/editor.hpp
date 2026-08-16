@@ -18,7 +18,6 @@ namespace nino_editor {
 		void Destroy();
 
 		GLFWwindow* window = nullptr;
-		nino_engine::NinoEngine engine;
 
 		Rhi_ImGui_Implementation* imGuiImplementation = nullptr;
 	};

@@ -10,11 +10,11 @@ namespace nino_engine {
 	class ServiceLocator {
 	public :
 		template <typename T>
-		static T* GetOrRegister() {
+		T* GetOrRegister() {
 			return Get<T>() || RegisterService<T>();
 		}
 		template <typename T>
-		static T* RegisterService() {
+		T* RegisterService() {
 			static_assert(std::is_base_of<Service, T>::value);
 			std::type_index typeIndex = typeid(T);
 			if (services.contains(typeIndex))
@@ -25,25 +25,25 @@ namespace nino_engine {
 			return rawPtr;
 		}
 		template <typename T>
-		static T* Get() {
+		T* Get() {
 			std::type_index typeIndex = typeid(T);
 			return dynamic_cast<T*>(services[typeIndex].get());
 		}
 		template <typename T>
-		static bool Exists() {
+		bool Exists() {
 			return Get<T>() != nullptr;
 		}
 		template <typename T>
-		static void UnregisterService() {
+		void UnregisterService() {
 			std::type_index typeIndex = typeid(T);
 			T* service = Get<T>();
 			if (service) {
 				services.erase(typeIndex);
 			}
 		}
-		static void Clear();
+		void Clear();
 	private :
-		static std::unordered_map<std::type_index, std::unique_ptr<Service>> services;
+		std::unordered_map<std::type_index, std::unique_ptr<Service>> services;
 		
 	};
 }

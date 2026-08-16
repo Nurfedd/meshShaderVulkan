@@ -3,12 +3,13 @@
 #include "Graphics/engine_graphic_resources.hpp"
 #include "task_manager.hpp"
 #include "service_locator.hpp"
+#include "engine.hpp"
 using namespace rhi;
 namespace nino_engine {
 	void RendererController::Create() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
 		uint32_t frameCount = engineResources->GetFrameInFlightCount();
-		Device* device = engineResources->Device;
+		Device = engineResources->Device;
 		
 		graphicQueue = engineResources->GraphicQueue;
 		presentQueue = engineResources->PresentQueue;
@@ -19,18 +20,18 @@ namespace nino_engine {
 			CommandBuffer* newCommandBuffer = renderInterface->InitCommandBuffer();
 			graphicCommandBuffers[i] = newCommandBuffer;
 		}
-		commandPool->AllocateCommandBuffers(device, graphicCommandBuffers.data(), graphicCommandBuffers.size());
+		commandPool->AllocateCommandBuffers(Device, graphicCommandBuffers.data(), graphicCommandBuffers.size());
 
 		additionalSwapchainRenderer = renderInterface->InitDynamicRenderer();
 
-		TaskManager* taskManager = ServiceLocator::Get<TaskManager>();
+		TaskManager* taskManager = GEngine->EngineServices.Get<TaskManager>();
 		lastRenderTask = taskManager->AsyncTask(TaskType::Render_Task, std::bind(&RendererController::RenderTaskAsync, this));
 
 	}
 	
 	void RendererController::PushFrame(FrameData frameData) {
 		std::unique_lock lock(frameDataMutex);
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
 		uint32_t frameCount = engineResources->GetFrameInFlightCount();
 		
 		frameDataCV_notFull.wait(lock, [this,frameCount] {
@@ -75,31 +76,31 @@ namespace nino_engine {
 	}
 
 	bool RendererController::BeginFrame() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
-		Device* device = engineResources->Device;
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
+		
 
 		Fence* currentFence = engineResources->GetCurrentFence();
 		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentFrame());
 		Swapchain* swapchain = engineResources->Swapchain;
 
-		device->WaitForFences(&currentFence, 1, true);
+		Device->WaitForFences(&currentFence, 1, true);
 
-		SwapchainAcquireResult acquireResult = swapchain->AcquireImage(device, nullptr, imageAvailableSemaphore);
+		SwapchainAcquireResult acquireResult = swapchain->AcquireImage(Device, nullptr, imageAvailableSemaphore);
 
 
 		if (acquireResult.success) {
-			device->ResetFences(&currentFence, 1);
+			Device->ResetFences(&currentFence, 1);
 		}
 		else {
-			device->WaitIdle();
-			swapchain->Recreate(device);
+			Device->WaitIdle();
+			swapchain->Recreate(Device);
 		}
 		return acquireResult.success;
 	}
 	
 	void RendererController::RenderFrame() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
-		Device* device = engineResources->Device;
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
+		
 		Swapchain* swapchain = engineResources->Swapchain;
 
 		uint32_t imageIndex = swapchain->GetImageIndex();
@@ -197,8 +198,8 @@ namespace nino_engine {
 	}
 
 	void RendererController::PresentSwapchain() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
-		Device* device = engineResources->Device;
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
+		
 		Swapchain* swapchain = engineResources->Swapchain;
 
 		uint32_t imageIndex = swapchain->GetImageIndex();
@@ -210,14 +211,14 @@ namespace nino_engine {
 		presentInfo.swapchain = swapchain;
 
 		if (!presentQueue->Present(presentInfo)) {
-			device->WaitIdle();
-			swapchain->Recreate(device);
+			Device->WaitIdle();
+			swapchain->Recreate(Device);
 		}
 	}
 
 	void RendererController::Destroy() {
-		EngineGraphicResources* engineResources = ServiceLocator::Get<EngineGraphicResources>();
-		Device* device = engineResources->Device;
+		EngineGraphicResources* engineResources = GEngine->EngineServices.Get<EngineGraphicResources>();
+		
 		uint32_t frameCount = engineResources->GetFrameInFlightCount();
 		
 		shouldStop = true;
@@ -228,7 +229,7 @@ namespace nino_engine {
 			renderInterface->DestroyCommandBuffer(graphicCommandBuffers[i]);
 		}
 		for (std::unique_ptr<SceneRenderContext>& sceneRenderContext : renderContexts) {
-			sceneRenderContext->sceneRenderer->Destroy(device);
+			sceneRenderContext->sceneRenderer->Destroy(Device);
 		}
 		renderInterface->DestroyDynamicRenderer(additionalSwapchainRenderer);
 	}

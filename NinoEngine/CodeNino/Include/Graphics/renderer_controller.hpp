@@ -38,9 +38,9 @@ namespace nino_engine {
 				return nullptr;
 
 			static_assert(std::is_base_of<SceneRenderer, T>::value);
-			rhi::Device* device = ServiceLocator::Get<EngineGraphicResources>()->Device;
+			
 			std::unique_ptr<T> newRenderer = std::make_unique<T>();
-			newRenderer->Create(device);
+			newRenderer->Create(Device);
 
 			std::unique_ptr<SceneRenderContext> sceneRenderContext = std::make_unique<SceneRenderContext>();
 			sceneRenderContext->sceneRenderer = std::move(newRenderer);
@@ -74,6 +74,7 @@ namespace nino_engine {
 
 		std::shared_ptr<mt::Task> lastRenderTask;
 
+		rhi::Device* Device = nullptr;
 		rhi::DeviceQueue* graphicQueue = nullptr;
 		rhi::DeviceQueue* presentQueue = nullptr;
 

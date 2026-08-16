@@ -11,13 +11,14 @@ namespace nino_editor {
 		Destroy();
 	}
 	void NinoEditor::Init(int width, int height, const char* label) {
-		window = engine.Init(width,height,label);
+		window = StartGlobalEngine(width, height, label);
 		glfwMakeContextCurrent(window);
 
-		engine.GetRendererController()->CreateNewRenderContext<TriangleRenderer>(nullptr, true);
+		
+		GEngine->GetRendererController()->CreateNewRenderContext<TriangleRenderer>(nullptr, true);
 		InitImGui();
 
-		engine.Start();
+		GEngine->Start();
 	}
 	void NinoEditor::InitImGui() {
 		ImGui::CreateContext();
@@ -35,7 +36,7 @@ namespace nino_editor {
 		
 		BeginImpl implCreateInfo;
 		
-		EngineGraphicResources* engineGraphicResources = ServiceLocator::Get<EngineGraphicResources>();
+		EngineGraphicResources* engineGraphicResources = GEngine->EngineServices.Get<EngineGraphicResources>();
 		implCreateInfo.device = engineGraphicResources->Device;
 		implCreateInfo.swapchain = engineGraphicResources->Swapchain;
 		implCreateInfo.instance = engineGraphicResources->Instance;
@@ -43,12 +44,12 @@ namespace nino_editor {
 		imGuiImplementation->Create(implCreateInfo);
 		RhiSetCurrentImplementation(imGuiImplementation);
 
-		RendererController* rendererController = engine.GetRendererController();
+		RendererController* rendererController = GEngine->GetRendererController();
 		rendererController->OnPrevBeginFrame.Add(this, &NinoEditor::OnRenderThreadPrevBeginFrame);
 		rendererController->OnPostBeginFrame.Add(this, &NinoEditor::OnRenderThreadPrevRenderFrame);
 		rendererController->OnCommandBufferRecorded.Add(this, &NinoEditor::RecordImGuiDrawData);
 		rendererController->OnBeginDestroy.Add(this, &NinoEditor::OnRendererDestroy);
-		//engine.GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
+		//GEngine->GetRendererController()->AddDrawDataFunc(std::bind(&NinoEditor::RecordImGuiDrawData, this, std::placeholders::_1));
 	}
 	
 	void NinoEditor::OnRenderThreadPrevBeginFrame() {
@@ -72,13 +73,13 @@ namespace nino_editor {
 	}
 
 	void NinoEditor::OnRendererDestroy() {
-		imGuiImplementation->Destroy();
+		RhiDestroyImGuiImplementation(imGuiImplementation);
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
 
 	}
 	void NinoEditor::Destroy() {
-		
+		DeleteGlobalEngine();
 	}
 }
