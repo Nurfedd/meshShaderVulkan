@@ -25,7 +25,7 @@ namespace nino_engine {
 
 	CommandBuffer* SceneRenderer::GetCurrentCommandBuffer() {
 		EngineGraphicResources* engineGraphicResources = GEngine->EngineServices.Get<EngineGraphicResources>();
-		return graphicCommandBuffers[engineGraphicResources->GetCurrentFrame()];
+		return graphicCommandBuffers[engineGraphicResources->GetCurrentSwapchainFrame()];
 	}
 
 	void SceneRenderer::Destroy(Device* device) {

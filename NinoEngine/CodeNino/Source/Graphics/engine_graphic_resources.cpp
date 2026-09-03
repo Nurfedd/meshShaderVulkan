@@ -77,10 +77,12 @@ namespace nino_engine {
 	uint32_t EngineGraphicResources::GetFrameInFlightCount() {
 		return Swapchain->GetImageCount();
 	}
-	uint32_t EngineGraphicResources::GetCurrentFrame() {
+	uint32_t EngineGraphicResources::GetCurrentSwapchainFrame() {
 		return Swapchain->GetCurrentFrame();
 	}
-	EngineGraphicResources::~EngineGraphicResources() {
+	
+	// others service need all of these especially the device
+	void EngineGraphicResources::OnPostDestroy() {
 		uint32_t imageCount = GetFrameInFlightCount();
 
 		for (uint32_t i = 0; i < imageCount; i++) {

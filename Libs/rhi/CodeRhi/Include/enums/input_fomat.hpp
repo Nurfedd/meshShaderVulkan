@@ -42,4 +42,6 @@ namespace rhi {
 		INDEX_TYPE_UINT_16,
 		INDEX_TYPE_UINT_32,
 	};
+
+	size_t GetSizeFromInputFormat(InputFormat inputFormat);
 }

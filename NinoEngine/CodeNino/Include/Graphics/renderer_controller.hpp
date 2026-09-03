@@ -32,6 +32,7 @@ namespace nino_engine {
 		void PushFrame(FrameData frameData);
 		void Destroy();
 		
+		uint64_t GetFrameCount();
 		template <typename T>
 		SceneRenderContext* CreateNewRenderContext(rhi::Texture* textureToDrawOn, bool renderOnSwapchain) {
 			if (textureToDrawOn == nullptr && !renderOnSwapchain)
@@ -82,6 +83,6 @@ namespace nino_engine {
 		std::vector<std::unique_ptr<SceneRenderContext>> renderContexts;
 
 		rhi::DynamicRenderer* additionalSwapchainRenderer = nullptr;
-		
+		uint64_t frameCount = 0;
 	};
 }

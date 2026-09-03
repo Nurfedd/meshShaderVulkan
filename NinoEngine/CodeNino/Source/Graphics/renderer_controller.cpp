@@ -66,6 +66,7 @@ namespace nino_engine {
 				OnPostBeginFrame.Broadcast();
 				RenderFrame();
 				OnPostRenderFrame.Broadcast();
+				frameCount++;
 			}
 		}
 	}
@@ -80,7 +81,7 @@ namespace nino_engine {
 		
 
 		Fence* currentFence = engineResources->GetCurrentFence();
-		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentFrame());
+		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentSwapchainFrame());
 		Swapchain* swapchain = engineResources->Swapchain;
 
 		Device->WaitForFences(&currentFence, 1, true);
@@ -104,13 +105,13 @@ namespace nino_engine {
 		Swapchain* swapchain = engineResources->Swapchain;
 
 		uint32_t imageIndex = swapchain->GetImageIndex();
-		uint32_t currentFrame = engineResources->GetCurrentFrame();
+		uint32_t currentFrame = engineResources->GetCurrentSwapchainFrame();
 
 
 		Texture* swapchainTexture = swapchain->GetTexture(imageIndex);
 
 		Fence* currentFence = engineResources->GetCurrentFence();
-		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentFrame());
+		Semaphore* imageAvailableSemaphore = engineResources->GetImageAvailableSemaphore(engineResources->GetCurrentSwapchainFrame());
 		Semaphore* imageRendererSemaphore = engineResources->GetImageRenderedSemaphore(imageIndex);
 
 

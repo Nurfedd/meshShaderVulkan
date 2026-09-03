@@ -4,11 +4,12 @@
 #include "Volk/volk.h"
 #include <exception>
 namespace rhi {
-	void VulkanSetLayout::Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount,bool* variable) {
-		SetLayout::Create(device, setInfos, setInfoCount,variable);
+	void VulkanSetLayout::Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount) {
+		SetLayout::Create(device, setInfos, setInfoCount);
 
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
 		std::vector<VkDescriptorSetLayoutBinding> layoutsBindings(setInfoCount);
+		std::vector<VkDescriptorBindingFlags> bindingsFlags(setInfoCount);
 
 		for (uint32_t i = 0; i < setInfoCount; i++) {
 			SetInfo info = setInfos[i];
@@ -21,19 +22,17 @@ namespace rhi {
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutsBindings[i] = layoutBinding;
 
-		}
-		std::vector< VkDescriptorBindingFlags> bindingsFlags(setInfoCount);
 
-		for (uint32_t i = 0; i < setInfoCount; i++) {
 			VkDescriptorBindingFlags bindingFlag =
 				VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
 				VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 
-			if (variable && variable[i])
+			if (info.variable) {
 				bindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+			}
+			bindingsFlags[i] = bindingFlag;
 		}
 		
-
 		VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo{};
 		flagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
 		flagsInfo.bindingCount = setInfoCount;

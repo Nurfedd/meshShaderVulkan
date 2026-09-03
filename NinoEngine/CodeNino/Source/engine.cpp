@@ -7,6 +7,8 @@ using namespace rhi;
 using namespace mt;
 namespace nino_engine {
 	nino_engine::NinoEngine* GEngine = nullptr;
+	OnGlobalEngineCreated nino_engine::GEngineCreatedDelegate;
+	OnGlobalEngineStopped nino_engine::GEngineStoppedDelegate;
 	GLFWwindow* NinoEngine::Init(int width, int height, const char* windowTitle) {
 		rhi::Init(VULKAN_API);
 		glfwInit();
@@ -58,14 +60,20 @@ namespace nino_engine {
 		rhi::Close();
 	}
 	GLFWwindow* StartGlobalEngine(int width, int height, const char* windowTitle) {
+		if (GEngine) {
+			return nullptr;
+		}
 		GEngine = new NinoEngine;
-		return GEngine->Init(width,height,windowTitle);
+		GLFWwindow* window =  GEngine->Init(width,height,windowTitle);
+		GEngineCreatedDelegate.Broadcast(GEngine);
+		return window;
 	}
 
 	void DeleteGlobalEngine() {
 		if (GEngine != nullptr) {
 			delete GEngine;
 			GEngine = nullptr;
+			GEngineStoppedDelegate.Broadcast();
 		}
 	}
 }

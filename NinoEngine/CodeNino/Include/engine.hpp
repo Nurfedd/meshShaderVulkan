@@ -2,8 +2,10 @@
 #include "GLFW/glfw3.h"
 #include "service_locator.hpp"
 #include "Graphics/renderer_controller.hpp"
+#include "nino_core.hpp"
 #include <functional>
 #include <memory>
+
 
 namespace nino_engine {
 
@@ -30,8 +32,13 @@ namespace nino_engine {
 		void Destroy();
 		
 	};
-	extern nino_engine::NinoEngine* GEngine;
 
+	DECLARE_DELEGATE(OnGlobalEngineCreated, NinoEngine*)
+	DECLARE_DELEGATE(OnGlobalEngineStopped)
+	
+	extern nino_engine::NinoEngine* GEngine;
+	extern OnGlobalEngineCreated GEngineCreatedDelegate;
+	extern OnGlobalEngineStopped GEngineStoppedDelegate;
 	GLFWwindow* StartGlobalEngine(int width, int height, const char* windowTitle);
 	void DeleteGlobalEngine();
 }
