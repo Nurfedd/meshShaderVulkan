@@ -6,8 +6,8 @@ namespace rhi {
 	public :
 		VkPipelineBindPoint GetBindPoint() const override { return VK_PIPELINE_BIND_POINT_GRAPHICS; }
 		
-		void CreateVertexPipeline(Device* device, GraphicVertexPipelineCreateInfo* graphicVertexPipelineCreateInfo) override;
-		void CreateMeshPipeline(Device* device, GraphicMeshPipelineCreateInfo* graphicMeshPipelineCreateInfo) override;
+		void CreateVertexPipeline(Device* device, const GraphicVertexPipelineCreateInfo& graphicVertexPipelineCreateInfo) override;
+		void CreateMeshPipeline(Device* device, const GraphicMeshPipelineCreateInfo& graphicMeshPipelineCreateInfo) override;
 
 		void PushConstant(CommandBuffer* commandBuffer, uint32_t offset, size_t size, void* data, ShaderStagesFlags shaderStages) override;
 		void BindDescriptorSet(CommandBuffer* commandBuffer, DescriptorSet** sets, uint32_t setCount, uint32_t firstSet) override;
@@ -19,8 +19,8 @@ namespace rhi {
 	private :
 		std::vector<VkFormat> usedColorFormats;
 		VkFormat usedDepthFormat;
-		void Create(Device* device,GraphicPipelineCreateInfo* createInfo,const std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
-		void CreateShaderStages(GraphicVertexPipelineCreateInfo* createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
-		void CreateShaderStages(GraphicMeshPipelineCreateInfo* createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
+		void Create(Device* device,const GraphicPipelineCreateInfo& createInfo,const std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
+		void CreateShaderStages(const GraphicVertexPipelineCreateInfo& createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
+		void CreateShaderStages(const GraphicMeshPipelineCreateInfo& createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
 	};
 }

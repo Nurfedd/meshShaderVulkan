@@ -1,6 +1,5 @@
 #include "IVulkan/vulkan_compute_pipeline.hpp"
 #include "IVulkan/vulkan_set_layout.hpp"
-#include "IVulkan/vulkan_push_constant_range.hpp"
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/vulkan_command_buffer.hpp"
 #include "IVulkan/vulkan_shader.hpp"
@@ -18,10 +17,15 @@ namespace rhi {
 		}
 
 		std::vector<VkPushConstantRange> pushConstantRanges(createInfo.pushConstantCount);
-
 		for (int i = 0; i < createInfo.pushConstantCount; i++) {
-			VulkanPushConstantRange& vulkanPushConstantRange = createInfo.pushConstants[i]->API_VULKAN();
-			pushConstantRanges[i] = vulkanPushConstantRange.GetRange();
+			PushConstantRange& pushConstantRange = createInfo.pushConstants[i];
+
+			VkPushConstantRange vulkanPushConstantRange;
+			vulkanPushConstantRange.size = pushConstantRange.size;
+			vulkanPushConstantRange.offset = pushConstantRange.offset;
+			vulkanPushConstantRange.stageFlags = ToVulkanShaderStage(pushConstantRange.stages);
+
+			pushConstantRanges[i] = vulkanPushConstantRange;
 		}
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

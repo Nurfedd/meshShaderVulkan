@@ -1,20 +1,20 @@
 #include "IVulkan/vulkan_vertex_layout.hpp"
 #include "IVulkan/enums/vulkan_input_format.hpp"
 namespace rhi {
-	void VulkanVertexLayout::Create(VertexInput* vertexInputs, uint32_t inputCount, uint32_t _binding, uint32_t _stride) {
-		VertexLayout::Create(vertexInputs, inputCount, _binding, _stride);
-		inputDescriptions.resize(inputCount);
-		for (int i = 0; i < inputCount; i++) {
+	void GetVulkanVertexLayoutObjects(const VertexLayout& vertexLayout, std::vector<VkVertexInputAttributeDescription>& inputDescriptions, VkVertexInputBindingDescription& bindingDescription) {
+		inputDescriptions.resize(vertexLayout.inputCount);
+		for (int i = 0; i < vertexLayout.inputCount; i++) {
 			VkVertexInputAttributeDescription newAttribute{};
-			VertexInput vertexInput = vertexInputs[i];
-			newAttribute.binding = binding;
+			VertexInput vertexInput = vertexLayout.vertexInputs[i];
+			newAttribute.binding = vertexLayout.binding;
 			newAttribute.format = ToVulkanInputFormat(vertexInput.inputFormat);
 			newAttribute.offset = vertexInput.offset;
 			newAttribute.location = vertexInput.location;
 			inputDescriptions[i] = newAttribute;
 		}
-		bindingDescription.binding = binding;
+		bindingDescription.binding = vertexLayout.binding;
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		bindingDescription.stride = stride;
+		bindingDescription.stride = vertexLayout.stride;
 	}
+	
 }

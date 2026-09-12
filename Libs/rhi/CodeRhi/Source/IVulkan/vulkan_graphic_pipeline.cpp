@@ -2,7 +2,6 @@
 #include "IVulkan/vulkan_vertex_layout.hpp"
 #include "IVulkan/vulkan_shader.hpp"
 #include "IVulkan/vulkan_set_layout.hpp"
-#include "IVulkan/vulkan_push_constant_range.hpp"
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/vulkan_command_buffer.hpp"
 #include "IVulkan/enums/vulkan_rasterizer_state.hpp"
@@ -11,19 +10,19 @@
 #include "Volk/volk.h"
 
 namespace rhi {
-	void VulkanGraphicPipeline::CreateVertexPipeline(Device* device, GraphicVertexPipelineCreateInfo* createInfo) {
+	void VulkanGraphicPipeline::CreateVertexPipeline(Device* device, const GraphicVertexPipelineCreateInfo& createInfo) {
 		std::vector< VkPipelineShaderStageCreateInfo> shaderStages;
 		CreateShaderStages(createInfo, shaderStages);
 		Create(device, createInfo, shaderStages);
 	}
 
-	void VulkanGraphicPipeline::CreateMeshPipeline(Device* device, GraphicMeshPipelineCreateInfo* createInfo) {
+	void VulkanGraphicPipeline::CreateMeshPipeline(Device* device, const GraphicMeshPipelineCreateInfo& createInfo) {
 		std::vector< VkPipelineShaderStageCreateInfo> shaderStages;
 		CreateShaderStages(createInfo, shaderStages);
 		Create(device, createInfo, shaderStages);
 	}
 
-	void VulkanGraphicPipeline::Create(Device* device,GraphicPipelineCreateInfo* createInfo, const std::vector<VkPipelineShaderStageCreateInfo>& shaderStages) {
+	void VulkanGraphicPipeline::Create(Device* device,const GraphicPipelineCreateInfo& createInfo, const std::vector<VkPipelineShaderStageCreateInfo>& shaderStages) {
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
 
 		
@@ -43,20 +42,22 @@ namespace rhi {
 		dynamicState.pDynamicStates = dynamicStates.data();
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions(createInfo->vertexLayoutCount);
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions(createInfo.vertexLayoutCount);
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 
-		for (int i = 0; i < createInfo->vertexLayoutCount; i++) {
-			VulkanVertexLayout& vulkanVertexLayout = createInfo->vertexLayouts[i]->API_VULKAN();
-			bindingDescriptions[i] = vulkanVertexLayout.GetBindingDescription();
-			for (VkVertexInputAttributeDescription attribute : vulkanVertexLayout.GetInputDescriptions()) {
+		for (int i = 0; i < createInfo.vertexLayoutCount; i++) {
+			std::vector<VkVertexInputAttributeDescription> inputDescriptions; 
+			VkVertexInputBindingDescription bindingDescription;
+			GetVulkanVertexLayoutObjects(createInfo.vertexLayouts[i], inputDescriptions, bindingDescription);
+			bindingDescriptions[i] = bindingDescription;
+			for (VkVertexInputAttributeDescription attribute : inputDescriptions) {
 				attributeDescriptions.push_back(attribute);
 			}
 		}
 
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = createInfo->vertexLayoutCount;
+		vertexInputInfo.vertexBindingDescriptionCount = createInfo.vertexLayoutCount;
 		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
 		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
@@ -77,9 +78,9 @@ namespace rhi {
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
-		rasterizer.polygonMode = ToVulkanPolygonMode(createInfo->rasterizerInfo.polygonMode);
-		rasterizer.cullMode = ToVulkanCullModeFlags(createInfo->rasterizerInfo.cullModeFlags);
-		rasterizer.frontFace = ToVulkanFrontFace(createInfo->rasterizerInfo.frontFace);
+		rasterizer.polygonMode = ToVulkanPolygonMode(createInfo.rasterizerInfo.polygonMode);
+		rasterizer.cullMode = ToVulkanCullModeFlags(createInfo.rasterizerInfo.cullModeFlags);
+		rasterizer.frontFace = ToVulkanFrontFace(createInfo.rasterizerInfo.frontFace);
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -88,9 +89,9 @@ namespace rhi {
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-		ColorAttachmentDescriptor* colorAttachments = createInfo->rasterizerInfo.colorAttachments;
+		ColorAttachmentDescriptor* colorAttachments = createInfo.rasterizerInfo.colorAttachments;
 
-		std::vector< VkPipelineColorBlendAttachmentState> blendsAttachments(createInfo->rasterizerInfo.attachmentCount);
+		std::vector< VkPipelineColorBlendAttachmentState> blendsAttachments(createInfo.rasterizerInfo.attachmentCount);
 
 		for (uint32_t i = 0; i < blendsAttachments.size(); i++) {
 			VkPipelineColorBlendAttachmentState colorBlendAttachment{};
@@ -114,41 +115,47 @@ namespace rhi {
 		colorBlending.attachmentCount = blendsAttachments.size();
 		colorBlending.pAttachments = blendsAttachments.data();
 
-		VkFormat depthFormat = ToVulkanFormat(createInfo->rasterizerInfo.depthFormat);
+		VkFormat depthFormat = ToVulkanFormat(createInfo.rasterizerInfo.depthFormat);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = createInfo->rasterizerInfo.depthTestEnable;
-		depthStencil.depthWriteEnable = createInfo->rasterizerInfo.depthWrite;
-		depthStencil.depthCompareOp = ToVulkanCompareOp(createInfo->rasterizerInfo.depthOperator);
+		depthStencil.depthTestEnable = createInfo.rasterizerInfo.depthTestEnable;
+		depthStencil.depthWriteEnable = createInfo.rasterizerInfo.depthWrite;
+		depthStencil.depthCompareOp = ToVulkanCompareOp(createInfo.rasterizerInfo.depthOperator);
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
-		std::vector<VkDescriptorSetLayout> layouts(createInfo->setLayoutCount);
+		std::vector<VkDescriptorSetLayout> layouts(createInfo.setLayoutCount);
 
-		for (int i = 0; i < createInfo->setLayoutCount; i++) {
-			VulkanSetLayout& vulkanSetLayout = createInfo->setLayouts[i]->API_VULKAN();
+		for (int i = 0; i < createInfo.setLayoutCount; i++) {
+			VulkanSetLayout& vulkanSetLayout = createInfo.setLayouts[i]->API_VULKAN();
 			layouts[i] = vulkanSetLayout.GetLayout();
 		}
 
-		std::vector<VkPushConstantRange> pushConstantRanges(createInfo->pushConstantCount);
-		for (int i = 0; i < createInfo->pushConstantCount; i++) {
-			VulkanPushConstantRange& vulkanPushConstantRange = createInfo->pushConstants[i]->API_VULKAN();
-			pushConstantRanges[i] = vulkanPushConstantRange.GetRange();
+		std::vector<VkPushConstantRange> pushConstantRanges(createInfo.pushConstantCount);
+		for (int i = 0; i < createInfo.pushConstantCount; i++) {
+			PushConstantRange& pushConstantRange = createInfo.pushConstants[i];
+
+			VkPushConstantRange vulkanPushConstantRange;
+			vulkanPushConstantRange.size = pushConstantRange.size;
+			vulkanPushConstantRange.offset = pushConstantRange.offset;
+			vulkanPushConstantRange.stageFlags = ToVulkanShaderStage(pushConstantRange.stages);
+
+			pushConstantRanges[i] = vulkanPushConstantRange;
 		}
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = createInfo->setLayoutCount;
+		pipelineLayoutInfo.setLayoutCount = createInfo.setLayoutCount;
 		pipelineLayoutInfo.pSetLayouts = layouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = createInfo->pushConstantCount;
+		pipelineLayoutInfo.pushConstantRangeCount = createInfo.pushConstantCount;
 		pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
 
 		if (vkCreatePipelineLayout(vulkanDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 
-		std::vector<VkFormat> vkFormats(createInfo->rasterizerInfo.attachmentCount);
+		std::vector<VkFormat> vkFormats(createInfo.rasterizerInfo.attachmentCount);
 
 		for (uint32_t i = 0; i < vkFormats.size(); i++) {
 			vkFormats[i] = ToVulkanFormat(colorAttachments[i].format);
@@ -182,9 +189,9 @@ namespace rhi {
 		}
 	}
 
-	void VulkanGraphicPipeline::CreateShaderStages(GraphicVertexPipelineCreateInfo* createInfo, std::vector< VkPipelineShaderStageCreateInfo>& result) {
-		if (createInfo->vertexShader) {
-			VulkanShader& vulkanVertexShader = createInfo->vertexShader->API_VULKAN();
+	void VulkanGraphicPipeline::CreateShaderStages(const GraphicVertexPipelineCreateInfo& createInfo, std::vector< VkPipelineShaderStageCreateInfo>& result) {
+		if (createInfo.vertexShader) {
+			VulkanShader& vulkanVertexShader = createInfo.vertexShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -192,8 +199,8 @@ namespace rhi {
 			vertShaderStageInfo.pName = "main";
 			result.push_back(vertShaderStageInfo);
 		}
-		if (createInfo->fragmentShader) {
-			VulkanShader& vulkanFragmentShader = createInfo->fragmentShader->API_VULKAN();
+		if (createInfo.fragmentShader) {
+			VulkanShader& vulkanFragmentShader = createInfo.fragmentShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -201,8 +208,8 @@ namespace rhi {
 			vertShaderStageInfo.pName = "main";
 			result.push_back(vertShaderStageInfo);
 		}
-		if (createInfo->geometryShader) {
-			VulkanShader& vulkanGeometryShader = createInfo->geometryShader->API_VULKAN();
+		if (createInfo.geometryShader) {
+			VulkanShader& vulkanGeometryShader = createInfo.geometryShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
@@ -211,10 +218,10 @@ namespace rhi {
 			result.push_back(vertShaderStageInfo);
 		}
 	}
-	void VulkanGraphicPipeline::CreateShaderStages(GraphicMeshPipelineCreateInfo* createInfo, std::vector< VkPipelineShaderStageCreateInfo>& result) {
+	void VulkanGraphicPipeline::CreateShaderStages(const GraphicMeshPipelineCreateInfo& createInfo, std::vector< VkPipelineShaderStageCreateInfo>& result) {
 		
-		if (createInfo->fragmentShader) {
-			VulkanShader& vulkanFragmentShader = createInfo->fragmentShader->API_VULKAN();
+		if (createInfo.fragmentShader) {
+			VulkanShader& vulkanFragmentShader = createInfo.fragmentShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -222,8 +229,8 @@ namespace rhi {
 			vertShaderStageInfo.pName = "main";
 			result.push_back(vertShaderStageInfo);
 		}
-		if (createInfo->taskShader) {
-			VulkanShader& vulkanTaskShader = createInfo->taskShader->API_VULKAN();
+		if (createInfo.taskShader) {
+			VulkanShader& vulkanTaskShader = createInfo.taskShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_TASK_BIT_EXT;
@@ -231,8 +238,8 @@ namespace rhi {
 			vertShaderStageInfo.pName = "main";
 			result.push_back(vertShaderStageInfo);
 		}
-		if (createInfo->meshShader) {
-			VulkanShader& vulkanMeshShader = createInfo->meshShader->API_VULKAN();
+		if (createInfo.meshShader) {
+			VulkanShader& vulkanMeshShader = createInfo.meshShader->API_VULKAN();
 			VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			vertShaderStageInfo.stage = VK_SHADER_STAGE_MESH_BIT_EXT;

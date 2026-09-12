@@ -30,9 +30,7 @@ namespace rhi {
 		virtual Device* InitDevice() = 0;
 		virtual Swapchain* InitSwapchain() = 0;
 		virtual Shader* InitShader() = 0;
-		virtual VertexLayout* InitVertexLayout() = 0;
 		virtual SetLayout* InitSetLayout() = 0;
-		virtual PushConstantRange* InitPushConstantRange() = 0;
 		virtual CommandPool* InitCommandPool() = 0;
 		virtual CommandBuffer* InitCommandBuffer() = 0;
 		virtual GraphicPipeline* InitGraphicPipeline() = 0;
@@ -52,9 +50,7 @@ namespace rhi {
 		void DestroyDevice(Device* device) { device->Destroy(); delete device; }
 		void DestroySwapchain(Swapchain* swapchain, Device* device) { swapchain->Destroy(device); delete swapchain; }
 		void DestroyShader(Shader* shader, Device* device) { shader->Destroy(device); delete shader; }
-		void DestroyVertexLayout(VertexLayout* vertexLayout) { delete vertexLayout; }
 		void DestroySetLayout(SetLayout* setLayout, Device* device) { setLayout->Destroy(device); delete setLayout; }
-		void DestroyPushConstantRange(PushConstantRange* pushConstantRange) { delete pushConstantRange; }
 		void DestroyCommandPool(CommandPool* commandPool, Device* device) { commandPool->Destroy(device); delete commandPool; }
 		void DestroyCommandBuffer(CommandBuffer* commandBuffer) { delete commandBuffer; }
 		void DestroyPipeline(Pipeline* pipeline, Device* device) { pipeline->Destroy(device); delete pipeline; }

@@ -11,7 +11,7 @@ namespace rhi {
 	struct ComputePipelineCreateInfo {
 		Shader* computeShader;
 		SetLayout** setLayouts;
-		PushConstantRange** pushConstants;
+		PushConstantRange* pushConstants;
 
 		uint32_t setLayoutCount;
 		uint32_t pushConstantCount;

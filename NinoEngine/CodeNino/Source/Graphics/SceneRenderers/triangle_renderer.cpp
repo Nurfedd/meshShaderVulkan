@@ -35,7 +35,7 @@ namespace nino_engine {
 		pipelineCreateInfo.vertexShader = triangleVertexShader;
 		pipelineCreateInfo.rasterizerInfo = rasterizerInfo;
 
-		trianglePipeline->CreateVertexPipeline(device, &pipelineCreateInfo);
+		trianglePipeline->CreateVertexPipeline(device, pipelineCreateInfo);
 
 		triangleRenderer = renderInterface->InitDynamicRenderer();
 		

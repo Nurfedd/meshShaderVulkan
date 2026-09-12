@@ -28,9 +28,9 @@ namespace rhi {
 	};
 
 	struct GraphicPipelineCreateInfo {
-		PushConstantRange** pushConstants = nullptr;
+		PushConstantRange* pushConstants = nullptr;
 		SetLayout** setLayouts = nullptr;
-		VertexLayout** vertexLayouts = nullptr;
+		VertexLayout* vertexLayouts = nullptr;
 
 
 		uint32_t pushConstantCount = 0;
@@ -54,8 +54,8 @@ namespace rhi {
 	class GraphicPipeline : public Pipeline {
 	public :
 		virtual ~GraphicPipeline() = default;
-		virtual void CreateVertexPipeline(Device* device, GraphicVertexPipelineCreateInfo* graphicVertexPipelineCreateInfo) = 0;
-		virtual void CreateMeshPipeline(Device* device, GraphicMeshPipelineCreateInfo* graphicMeshPipelineCreateInfo) = 0;
+		virtual void CreateVertexPipeline(Device* device, const GraphicVertexPipelineCreateInfo& graphicVertexPipelineCreateInfo) = 0;
+		virtual void CreateMeshPipeline(Device* device, const GraphicMeshPipelineCreateInfo& graphicMeshPipelineCreateInfo) = 0;
 		virtual VulkanGraphicPipeline& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanGraphicPipeline"); }
 	protected :
 	};

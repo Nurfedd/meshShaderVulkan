@@ -34,7 +34,10 @@ namespace rhi {
 	enum ShaderStagesFlags {
 		VERTEX_STAGE = 1 << 1,
 		FRAGMENT_STAGE = 1 << 2,
-		COMPUTE_STAGE = 1 << 3,
+		GEOMETRY_STAGE = 1 << 3,
+
+		GRAPHICS_STAGE = VERTEX_STAGE | FRAGMENT_STAGE | GEOMETRY_STAGE,
+		COMPUTE_STAGE = 1 << 4,
 	};
 	ENUM_CLASS_FLAGS(ShaderStagesFlags);
 	enum IndexType {

@@ -5,9 +5,7 @@
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/vulkan_swapchain.hpp"
 #include "IVulkan/vulkan_shader.hpp"
-#include "IVulkan/vulkan_vertex_layout.hpp"
 #include "IVulkan/vulkan_set_layout.hpp"
-#include "IVulkan/vulkan_push_constant_range.hpp"
 #include "IVulkan/vulkan_command_pool.hpp"
 #include "IVulkan/vulkan_command_buffer.hpp"
 #include "IVulkan/vulkan_graphic_pipeline.hpp"
@@ -30,9 +28,7 @@ namespace rhi {
 		VulkanDevice* InitDevice() override { return new VulkanDevice; }
 		VulkanSwapchain* InitSwapchain() override { return new VulkanSwapchain; }
 		VulkanShader* InitShader() override { return new VulkanShader; }
-		VulkanVertexLayout* InitVertexLayout() override { return new VulkanVertexLayout; }
 		VulkanSetLayout* InitSetLayout() override { return new VulkanSetLayout; }
-		VulkanPushConstantRange* InitPushConstantRange() override { return new VulkanPushConstantRange; }
 		VulkanCommandPool* InitCommandPool() override { return new VulkanCommandPool; }
 		VulkanCommandBuffer* InitCommandBuffer() override { return new VulkanCommandBuffer; }
 		VulkanGraphicPipeline* InitGraphicPipeline() override { return new VulkanGraphicPipeline; }
